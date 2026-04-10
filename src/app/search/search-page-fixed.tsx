@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useCart, CartTest } from '@/lib/cart-context'
+import { useCart } from '@/lib/cart-context'
 import Link from 'next/link'
 
 const catIcons: Record<string, string> = {
@@ -27,6 +27,14 @@ interface Test {
 }
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-4xl animate-pulse">🧪</div>}>
+      <SearchContent />
+    </Suspense>
+  )
+}
+
+function SearchContent() {
   const [tests, setTests] = useState<Test[]>([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
@@ -36,7 +44,7 @@ export default function SearchPage() {
   // Load tests from Supabase
   useEffect(() => {
     async function fetchTests() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('tests')
         .select('*')
         .eq('is_active', true)
@@ -178,7 +186,7 @@ export default function SearchPage() {
                 <div className="text-base font-extrabold mb-1.5">No tests found</div>
                 <div className="text-[13px] text-[var(--text-soft)] leading-relaxed">
                   Try a different name or browse categories.<br />
-                  Can't find your test? <span className="text-[var(--teal)] font-bold cursor-pointer">Contact us on WhatsApp →</span>
+                  Can&apos;t find your test? <span className="text-[var(--teal)] font-bold cursor-pointer">Contact us on WhatsApp →</span>
                 </div>
               </div>
             ) : (
