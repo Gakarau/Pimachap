@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { CartProvider } from '@/lib/cart-context'
+import { BookingProvider } from '@/lib/booking-context'
 import BottomNav from '@/components/BottomNav'
 
 export const metadata: Metadata = {
@@ -19,27 +20,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <CartProvider>
-          {/* Desktop top bar */}
-          <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-[var(--border)] sticky top-0 z-50">
-            <div className="logo-text text-2xl">PIMA<span>CHAP</span></div>
-            <nav className="flex items-center gap-8">
-              <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Home</a>
-              <a href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Book Tests</a>
-              <a href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Ready Sample</a>
-              <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">My Orders</a>
-              <button className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors">
-                Sign In
-              </button>
-            </nav>
-          </header>
+          <BookingProvider>
+            {/* Desktop top bar */}
+            <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-[var(--border)] sticky top-0 z-50">
+              <div className="logo-text text-2xl">PIMA<span>CHAP</span></div>
+              <nav className="flex items-center gap-8">
+                <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Home</a>
+                <a href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Book Tests</a>
+                <a href="/ready-sample" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Ready Sample</a>
+                <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">My Orders</a>
+                <a href="/login" className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors no-underline">
+                  Sign In
+                </a>
+              </nav>
+            </header>
 
-          {/* Main content */}
-          <main className="md:max-w-5xl md:mx-auto md:px-8 md:py-6 pb-20 md:pb-6">
-            {children}
-          </main>
+            {/* Main content */}
+            <main className="md:max-w-5xl md:mx-auto md:px-8 md:py-6 pb-20 md:pb-6">
+              {children}
+            </main>
 
-          {/* Mobile bottom nav */}
-          <BottomNav />
+            {/* Mobile bottom nav */}
+            <BottomNav />
+          </BookingProvider>
         </CartProvider>
       </body>
     </html>
