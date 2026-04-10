@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyggA.woff2') format('woff2');
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --teal: #0D7377;
+  --teal-dark: #085A5D;
+  --teal-light: #14A3A8;
+  --teal-pale: #E8F7F7;
+  --amber: #F5A623;
+  --amber-light: #FFF3DC;
+  --green: #2DBD6E;
+  --green-pale: #E6F9EF;
+  --purple: #7C3AED;
+  --purple-pale: #F3EFFE;
+  --blue: #2563EB;
+  --blue-pale: #EFF6FF;
+  --orange: #EA580C;
+  --orange-pale: #FFF7ED;
+  --red: #E54B4B;
+  --red-pale: #FEF0F0;
+  --text: #1A1A2E;
+  --text-mid: #4A4A6A;
+  --text-soft: #8A8AAA;
+  --border: #E8E8F0;
+  --bg: #F4F5FA;
+  --white: #FFFFFF;
+  --r: 16px;
+  --rsm: 10px;
+  --sh: 0 2px 14px rgba(0, 0, 0, 0.07);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Mobile container */
+@media (max-width: 767px) {
+  body {
+    max-width: 430px;
+    margin: 0 auto;
+  }
+}
+
+/* Desktop layout */
+@media (min-width: 768px) {
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.logo-text {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 22px;
+  color: var(--teal);
+}
+
+.logo-text span {
+  color: var(--amber);
+  font-style: italic;
+}
+
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 100px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-teal {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(13, 115, 119, 0.3);
+}
+
+.btn-amber {
+  background: var(--amber);
+  color: var(--teal-dark);
+  box-shadow: 0 6px 24px rgba(245, 166, 35, 0.35);
+}
+
+.btn-orange {
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.3);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tag-green {
+  background: var(--green-pale);
+  color: var(--green);
+}
+
+.tag-amber {
+  background: var(--amber-light);
+  color: #9A6500;
+}
+
+.tag-teal {
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+}
+
+.tag-red {
+  background: var(--red-pale);
+  color: var(--red);
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 18px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.3s ease;
 }
