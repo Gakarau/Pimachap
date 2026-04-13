@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Home</a>
                 <a href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Book Tests</a>
                 <a href="/ready-sample" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Ready Sample</a>
-                <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">My Orders</a>
+                <a href="/track" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Track Order</a>
                 <a href="/login" className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors no-underline">
                   Sign In
                 </a>

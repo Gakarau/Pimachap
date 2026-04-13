@@ -5,7 +5,8 @@ import Link from 'next/link'
 const tabs = [
   { href: '/', icon: '🏠', label: 'Home' },
   { href: '/search', icon: '🔍', label: 'Search' },
-  { href: '/ready-sample', icon: '📦', label: 'Ready Sample' },
+  { href: '/ready-sample', icon: '📦', label: 'Sample' },
+  { href: '/track', icon: '📍', label: 'Track' },
   { href: '/profile', icon: '👤', label: 'Profile' },
 ]
 
