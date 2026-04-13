@@ -14,7 +14,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t-[1.5px] border-[var(--border)] flex py-2.5 pb-5 z-[100]"
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t-[1.5px] border-[var(--border)] flex py-2.5 pb-5 z-[100]"
          style={{ boxShadow: '0 -4px 20px rgba(0,0,0,.06)' }}>
       {tabs.map(tab => {
         const active = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href))

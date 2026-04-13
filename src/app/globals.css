@@ -9,31 +9,34 @@
 }
 
 :root {
-  --teal: #0D7377;
-  --teal-dark: #085A5D;
-  --teal-light: #14A3A8;
-  --teal-pale: #E8F7F7;
-  --amber: #F5A623;
-  --amber-light: #FFF3DC;
-  --green: #2DBD6E;
-  --green-pale: #E6F9EF;
+  --teal: #0A8F94;
+  --teal-dark: #065F63;
+  --teal-light: #12BEC4;
+  --teal-pale: #E0F5F6;
+  --amber: #F7A800;
+  --amber-light: #FFF4D6;
+  --green: #16A34A;
+  --green-pale: #DCFCE7;
   --purple: #7C3AED;
-  --purple-pale: #F3EFFE;
+  --purple-pale: #EDE9FE;
   --blue: #2563EB;
   --blue-pale: #EFF6FF;
   --orange: #EA580C;
-  --orange-pale: #FFF7ED;
-  --red: #E54B4B;
-  --red-pale: #FEF0F0;
-  --text: #1A1A2E;
-  --text-mid: #4A4A6A;
-  --text-soft: #8A8AAA;
-  --border: #E8E8F0;
-  --bg: #F4F5FA;
+  --orange-pale: #FFF0E6;
+  --red: #DC2626;
+  --red-pale: #FEE2E2;
+  --coral: #F43F5E;
+  --coral-pale: #FFE4E8;
+  --text: #0F172A;
+  --text-mid: #334155;
+  --text-soft: #94A3B8;
+  --border: #E2E8F0;
+  --bg: #F1F5F9;
   --white: #FFFFFF;
   --r: 16px;
   --rsm: 10px;
-  --sh: 0 2px 14px rgba(0, 0, 0, 0.07);
+  --sh: 0 2px 16px rgba(0, 0, 0, 0.08);
+  --sh-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 * {
@@ -45,14 +48,6 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-}
-
-/* Mobile container */
-@media (max-width: 767px) {
-  body {
-    max-width: 430px;
-    margin: 0 auto;
-  }
 }
 
 /* Desktop layout */
@@ -137,6 +132,41 @@ body {
 .tag-red {
   background: var(--red-pale);
   color: var(--red);
+}
+
+.tag-blue {
+  background: var(--blue-pale);
+  color: var(--blue);
+}
+
+.tag-orange {
+  background: var(--orange-pale);
+  color: var(--orange);
+}
+
+.tag-coral {
+  background: var(--coral-pale);
+  color: var(--coral);
+}
+
+.tag-purple {
+  background: var(--purple-pale);
+  color: var(--purple);
+}
+
+.vibrant-card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 18px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.vibrant-card:hover {
+  box-shadow: var(--sh-lg);
+  border-color: var(--teal);
 }
 
 .card {

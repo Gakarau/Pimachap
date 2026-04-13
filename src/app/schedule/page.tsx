@@ -126,7 +126,7 @@ export default function SchedulePage() {
       </div>
 
       {/* CTA */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] md:max-w-5xl px-5 pb-6 pt-3.5 bg-white border-t-[1.5px] border-[var(--border)] z-50">
+      <div className="fixed bottom-0 left-0 right-0 w-full max-w-6xl mx-auto px-5 pb-6 pt-3.5 bg-white border-t-[1.5px] border-[var(--border)] z-50">
         <button className="btn btn-teal text-[15px]" onClick={proceed}
                 style={{ opacity: selectedSlot && address.trim() ? 1 : 0.4, pointerEvents: selectedSlot && address.trim() ? 'auto' : 'none' }}>
           Next: How to receive results →

@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </header>
 
             {/* Main content */}
-            <main className="md:max-w-5xl md:mx-auto md:px-8 md:py-6 pb-20 md:pb-6">
+            <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 pb-24 md:pb-8">
               {children}
             </main>
 

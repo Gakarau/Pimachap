@@ -130,7 +130,7 @@ export default function CartPage() {
       </div>
 
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] md:max-w-5xl px-5 pb-6 pt-3.5 bg-white border-t-[1.5px] border-[var(--border)] z-50">
+        <div className="fixed bottom-0 left-0 right-0 w-full max-w-6xl mx-auto px-5 pb-6 pt-3.5 bg-white border-t-[1.5px] border-[var(--border)] z-50">
           <button className="btn btn-teal text-[15px]" onClick={() => router.push('/results')}>
             Find labs for {cart.length} test{cart.length > 1 ? 's' : ''} →
           </button>

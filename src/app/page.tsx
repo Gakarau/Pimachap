@@ -14,15 +14,22 @@ const catIcons: Record<string, string> = {
   biochemistry: '⚗️', serology: '🔬', coagulation: '🩸', allergy: '🤧', other: '🧪'
 }
 
+const WHY_US = [
+  { icon: '🔍', title: 'Compare 50+ labs', desc: 'See real prices before you pay — no surprises', color: 'var(--teal)', bg: 'var(--teal-pale)' },
+  { icon: '🏍️', title: 'KMLTTB-certified riders', desc: 'Every phlebotomist is board-certified & verified', color: 'var(--purple)', bg: 'var(--purple-pale)' },
+  { icon: '⚡', title: 'Same-day collection', desc: 'Book today, get collected today in Nairobi', color: 'var(--amber)', bg: 'var(--amber-light)' },
+  { icon: '💳', title: 'M-Pesa, zero hidden fees', desc: 'Pay securely after you review the total', color: 'var(--green)', bg: 'var(--green-pale)' },
+  { icon: '📋', title: 'Results your way', desc: 'WhatsApp, email or direct to your doctor', color: 'var(--blue)', bg: 'var(--blue-pale)' },
+  { icon: '🔒', title: 'Private & secure', desc: 'Password-protected PDF, never shared', color: 'var(--coral)', bg: 'var(--coral-pale)' },
+]
+
 export default async function HomePage() {
-  // Fetch popular tests from Supabase
   const { data: tests } = await supabase
     .from('tests')
     .select('id, name, slug, sample_type, category')
     .eq('is_active', true)
-    .limit(6)
+    .limit(8)
 
-  // Fetch categories (distinct)
   const { data: categories } = await supabase
     .from('tests')
     .select('category')
@@ -32,74 +39,127 @@ export default async function HomePage() {
 
   return (
     <div className="animate-fade-up">
-      {/* Mobile Hero */}
-      <div className="md:hidden"
-           style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 60%, var(--teal-light) 100%)', padding: '20px 20px 28px', borderRadius: '0 0 32px 32px', marginBottom: '20px' }}>
-        <div className="flex items-center justify-between mb-5">
+
+      {/* ── Call-to-book banner ── */}
+      <div className="mx-4 sm:mx-0 mb-4 mt-1 rounded-[var(--r)] flex items-center justify-between gap-3 px-4 py-3"
+           style={{ background: 'linear-gradient(90deg, var(--amber-light), #FFF9EC)', border: '1.5px solid var(--amber)' }}>
+        <div className="flex items-center gap-2.5">
+          <span className="text-xl">📞</span>
           <div>
-            <div className="text-[13px] text-white/60">Good morning 👋</div>
-            <div className="text-[20px] font-extrabold text-white">Welcome to Pimachap</div>
+            <div className="text-[13px] font-extrabold text-[var(--text)]">Prefer to call? We'll book for you</div>
+            <div className="text-[11px] text-[var(--text-mid)]">Free helpline · Mon–Sat, 7 AM – 8 PM</div>
           </div>
-          <div className="logo-text text-white" style={{ fontSize: '18px' }}>PIMA<span>CHAP</span></div>
+        </div>
+        <a href="tel:+254800PIMACHAP"
+           className="shrink-0 px-4 py-2 rounded-full text-[12px] font-extrabold no-underline"
+           style={{ background: 'var(--amber)', color: 'var(--teal-dark)' }}>
+          Call now
+        </a>
+      </div>
+
+      {/* ── Mobile Hero ── */}
+      <div className="md:hidden mx-0 mb-5"
+           style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 55%, var(--teal-light) 100%)', padding: '22px 20px 32px', borderRadius: '0 0 36px 36px' }}>
+        {/* Decorative dots */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
+          <div className="absolute w-48 h-48 rounded-full border-[40px] border-white/[0.05] -top-16 -right-16" />
+          <div className="absolute w-28 h-28 rounded-full border-[28px] border-white/[0.05] bottom-4 -left-10" />
         </div>
 
-        <div className="flex items-center gap-2.5 mb-3"
-             style={{ background: 'rgba(255,255,255,.15)', border: '1.5px solid rgba(255,255,255,.25)', borderRadius: '12px', padding: '10px 14px' }}>
+        <div className="relative flex items-center justify-between mb-5">
+          <div>
+            <div className="text-[12px] text-white/60 font-medium">Good morning 👋</div>
+            <div className="text-[21px] font-extrabold text-white leading-tight">Welcome to<br />Pimachap</div>
+          </div>
+          <div className="logo-text text-white" style={{ fontSize: '18px', color: '#fff' }}>
+            PIMA<span style={{ color: 'var(--amber)' }}>CHAP</span>
+          </div>
+        </div>
+
+        <div className="relative flex items-center gap-2.5 mb-4"
+             style={{ background: 'rgba(255,255,255,.12)', border: '1.5px solid rgba(255,255,255,.2)', borderRadius: '12px', padding: '10px 14px' }}>
           <span>📍</span>
           <span className="flex-1 text-[13px] text-white/70 font-medium">Nairobi, Kenya</span>
-          <span className="text-[12px] text-[var(--amber)] font-bold cursor-pointer">Change</span>
+          <span className="text-[12px] font-bold" style={{ color: 'var(--amber)' }}>Change</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-3">
+        <div className="relative grid grid-cols-2 gap-2.5">
           <Link href="/search"
-                className="p-3 rounded-full bg-[var(--teal)] text-white border-none text-[13px] font-bold text-center no-underline"
-                style={{ boxShadow: '0 4px 14px rgba(13,115,119,.3)' }}>
+                className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
+                style={{ background: 'rgba(255,255,255,.18)', border: '1.5px solid rgba(255,255,255,.25)', backdropFilter: 'blur(8px)' }}>
             🔍 Book a Test
           </Link>
           <Link href="/ready-sample"
-                className="p-3 rounded-full bg-[var(--orange)] text-white border-none text-[13px] font-bold text-center no-underline"
-                style={{ boxShadow: '0 4px 14px rgba(234,88,12,.25)' }}>
+                className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
+                style={{ background: 'var(--orange)', boxShadow: '0 4px 14px rgba(234,88,12,.4)' }}>
             📦 Ready Sample
           </Link>
         </div>
       </div>
 
-      {/* Desktop Hero */}
+      {/* ── Desktop Hero ── */}
       <div className="hidden md:block mb-8">
         <div className="rounded-3xl p-10 text-white relative overflow-hidden"
-             style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 60%, var(--teal-light) 100%)' }}>
+             style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 55%, var(--teal-light) 100%)' }}>
+          <div className="absolute w-[400px] h-[400px] rounded-full border-[72px] border-white/[0.05] -top-[110px] -right-[130px]" />
+          <div className="absolute w-[240px] h-[240px] rounded-full border-[48px] border-white/[0.04] bottom-[10px] -left-[80px]" />
+          <div className="absolute w-[160px] h-[160px] rounded-full border-[32px] border-white/[0.04] top-[40px] right-[200px]" />
+
           <div className="relative z-10 max-w-xl">
-            <h1 className="text-4xl font-extrabold mb-3 leading-tight">Lab tests at your door.<br />Transparent pricing.</h1>
-            <p className="text-white/70 text-lg mb-6">Compare labs across Nairobi. Book a certified phlebotomist or send your ready sample to any lab.</p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-[11px] font-bold tracking-wide"
+                 style={{ background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)' }}>
+              🇰🇪 Serving Nairobi · 50+ certified labs
+            </div>
+            <h1 className="text-4xl font-extrabold mb-3 leading-tight">
+              Lab tests at your door.<br />
+              <span style={{ color: 'var(--amber)' }}>Transparent pricing.</span>
+            </h1>
+            <p className="text-white/70 text-base mb-6 leading-relaxed">
+              Compare labs, book a KMLTTB-certified phlebotomist, or send your ready sample — all via M-Pesa.
+            </p>
             <div className="flex gap-3">
               <Link href="/search"
-                    className="px-8 py-4 rounded-full bg-[var(--amber)] text-[var(--teal-dark)] text-base font-extrabold no-underline hover:scale-[1.02] transition-transform"
-                    style={{ boxShadow: '0 6px 24px rgba(245,166,35,.35)' }}>
+                    className="px-8 py-4 rounded-full text-base font-extrabold no-underline hover:scale-[1.02] transition-transform"
+                    style={{ background: 'var(--amber)', color: 'var(--teal-dark)', boxShadow: '0 6px 24px rgba(247,168,0,.4)' }}>
                 🔍 Book a Test
               </Link>
               <Link href="/ready-sample"
-                    className="px-8 py-4 rounded-full bg-white/15 text-white text-base font-extrabold no-underline border-[1.5px] border-white/25 hover:bg-white/25 transition-colors">
+                    className="px-8 py-4 rounded-full text-base font-extrabold no-underline border-[1.5px] border-white/25 hover:bg-white/20 transition-colors"
+                    style={{ background: 'rgba(255,255,255,.12)' }}>
                 📦 Ready Sample
               </Link>
             </div>
           </div>
-          {/* Decorative circles */}
-          <div className="absolute w-[360px] h-[360px] rounded-full border-[64px] border-white/5 -top-[90px] -right-[110px]" />
-          <div className="absolute w-[220px] h-[220px] rounded-full border-[44px] border-white/[0.04] bottom-[20px] -left-[70px]" />
+
+          {/* Stats row */}
+          <div className="relative z-10 flex gap-6 mt-8">
+            {[
+              { value: '50+', label: 'Partner Labs' },
+              { value: '4.8★', label: 'Avg. Rating' },
+              { value: '<2h', label: 'Avg. Collection' },
+              { value: '100%', label: 'Certified Riders' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <div className="text-xl font-extrabold text-white">{stat.value}</div>
+                <div className="text-[11px] text-white/55">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-5 md:px-0">
+      {/* ── Content ── */}
+      <div className="px-4 sm:px-0">
+
         {/* Popular Tests */}
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-[15px] font-bold">Popular tests</h3>
-          <Link href="/search" className="text-[12px] text-[var(--teal)] font-bold no-underline">See all →</Link>
+          <h3 className="text-[15px] font-extrabold">Popular tests</h3>
+          <Link href="/search" className="text-[12px] font-bold no-underline" style={{ color: 'var(--teal)' }}>See all →</Link>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 mb-6" style={{ scrollbarWidth: 'none' }}>
           {tests?.map(t => (
             <Link key={t.id} href={`/search?q=${encodeURIComponent(t.name)}`}
-                  className="shrink-0 px-3.5 py-2 rounded-full border-[1.5px] border-[var(--border)] bg-white text-[12px] font-bold text-[var(--text-mid)] no-underline whitespace-nowrap"
+                  className="shrink-0 px-3.5 py-2 rounded-full border-[1.5px] border-[var(--border)] bg-white text-[12px] font-bold text-[var(--text-mid)] no-underline whitespace-nowrap hover:border-[var(--teal)] transition-colors"
                   style={{ boxShadow: 'var(--sh)' }}>
               {sampleIcons[t.sample_type] || '🧪'} {t.name}
             </Link>
@@ -108,33 +168,78 @@ export default async function HomePage() {
 
         {/* Browse by Category */}
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-[15px] font-bold">Browse by category</h3>
+          <h3 className="text-[15px] font-extrabold">Browse by category</h3>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 mb-8">
           {uniqueCats.map(cat => (
             <Link key={cat} href={`/search?q=${encodeURIComponent(cat)}`}
-                  className="bg-white rounded-[var(--r)] p-3.5 border-[1.5px] border-[var(--border)] text-center no-underline cursor-pointer hover:border-[var(--teal)] transition-colors"
+                  className="bg-white rounded-[var(--r)] p-3.5 border-[1.5px] border-[var(--border)] text-center no-underline cursor-pointer hover:border-[var(--teal)] hover:shadow-md transition-all"
                   style={{ boxShadow: 'var(--sh)' }}>
               <div className="text-[26px] mb-1.5">{catIcons[cat] || '🧪'}</div>
-              <div className="text-[12px] font-bold text-[var(--text)] capitalize">{cat.replace(/_/g, ' ')}</div>
+              <div className="text-[12px] font-bold capitalize" style={{ color: 'var(--text)' }}>{cat.replace(/_/g, ' ')}</div>
             </Link>
           ))}
         </div>
 
-        {/* Ready sample types */}
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-[15px] font-bold">Ready sample types</h3>
-          <Link href="/ready-sample" className="text-[12px] text-[var(--teal)] font-bold no-underline">Book pickup →</Link>
+        {/* ── Why Choose Us ── */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-[17px] font-extrabold">Why choose Pimachap?</h3>
+          </div>
+          <p className="text-[12px] text-[var(--text-soft)] mb-4">Nairobi's only diagnostics marketplace built for you.</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {WHY_US.map(item => (
+              <div key={item.title}
+                   className="rounded-[var(--r)] p-4 border-[1.5px] border-[var(--border)] bg-white"
+                   style={{ boxShadow: 'var(--sh)' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3"
+                     style={{ background: item.bg }}>
+                  {item.icon}
+                </div>
+                <div className="text-[13px] font-extrabold mb-1" style={{ color: 'var(--text)' }}>{item.title}</div>
+                <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-soft)' }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+
+        {/* ── Ready sample types ── */}
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-[15px] font-extrabold">Ready sample types</h3>
+          <Link href="/ready-sample" className="text-[12px] font-bold no-underline" style={{ color: 'var(--orange)' }}>Book pickup →</Link>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-4" style={{ scrollbarWidth: 'none' }}>
           {['🧫 Stool', '💧 Urine', '🧪 Semen', '🩸 Blood (pre-collected)', '😮‍💨 Sputum', '🔬 Swab'].map(s => (
             <Link key={s} href="/ready-sample"
-                  className="shrink-0 px-3.5 py-2 rounded-full border-[1.5px] border-[var(--border)] bg-white text-[12px] font-bold text-[var(--text-mid)] no-underline whitespace-nowrap"
-                  style={{ boxShadow: 'var(--sh)' }}>
+                  className="shrink-0 px-3.5 py-2 rounded-full border-[1.5px] bg-white text-[12px] font-bold text-[var(--text-mid)] no-underline whitespace-nowrap hover:border-[var(--orange)] transition-colors"
+                  style={{ border: '1.5px solid var(--border)', boxShadow: 'var(--sh)' }}>
               {s}
             </Link>
           ))}
         </div>
+
+        {/* ── Bottom CTA strip ── */}
+        <div className="rounded-[var(--r)] p-5 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+             style={{ background: 'linear-gradient(135deg, var(--teal-dark), var(--teal))', boxShadow: '0 8px 32px rgba(10,143,148,.25)' }}>
+          <div>
+            <div className="text-[16px] font-extrabold text-white mb-0.5">Not sure which test you need?</div>
+            <div className="text-[12px] text-white/60">Our team will guide you — free consultation.</div>
+          </div>
+          <div className="flex gap-2.5 shrink-0">
+            <a href="https://wa.me/254700000000"
+               className="px-5 py-2.5 rounded-full text-[13px] font-extrabold no-underline"
+               style={{ background: '#25D366', color: '#fff' }}>
+              💬 WhatsApp
+            </a>
+            <a href="tel:+254800000000"
+               className="px-5 py-2.5 rounded-full text-[13px] font-extrabold no-underline"
+               style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: '1.5px solid rgba(255,255,255,.3)' }}>
+              📞 Call
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   )
