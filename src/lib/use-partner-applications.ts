@@ -206,3 +206,17 @@ export async function activatePartnerApplication(applicationId: string, labId: s
 
   return response.json()
 }
+
+export async function provisionLabFromApplication(applicationId: string) {
+  const response = await fetch(`/api/platform/applications/${applicationId}/provision-lab`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+  })
+
+  return response.json() as Promise<{
+    lab_id?: string
+    payload_columns?: string[]
+    missing_required_columns?: string[]
+    error?: string
+  }>
+}

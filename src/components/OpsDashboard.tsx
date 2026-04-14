@@ -4,14 +4,18 @@ import { useMemo, useState } from 'react'
 
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
-import { activatePartnerApplication, usePartnerApplications } from '@/lib/use-partner-applications'
+import { activatePartnerApplication, provisionLabFromApplication, usePartnerApplications } from '@/lib/use-partner-applications'
+import { useLabsSchema } from '@/lib/use-labs-schema'
 import { usePlatformData } from '@/lib/use-platform-data'
 
 export default function OpsDashboard() {
   const { data, loading, error, summary } = usePlatformData()
   const { applications, reload } = usePartnerApplications()
+  const { columns, loading: schemaLoading, error: schemaError } = useLabsSchema()
   const [activationLabIds, setActivationLabIds] = useState<Record<string, string>>({})
   const [activatingId, setActivatingId] = useState<string | null>(null)
+  const [provisioningId, setProvisioningId] = useState<string | null>(null)
+  const [provisionMessages, setProvisionMessages] = useState<Record<string, string>>({})
   const activationQueue = useMemo(
     () => applications.filter((application) => application.status === 'approved' || application.status === 'submitted' || application.status === 'under_review'),
     [applications]
@@ -26,6 +30,36 @@ export default function OpsDashboard() {
     setActivatingId(applicationId)
     await activatePartnerApplication(applicationId, labId)
     setActivatingId(null)
+    reload()
+  }
+
+  async function provision(applicationId: string) {
+    setProvisioningId(applicationId)
+    const result = await provisionLabFromApplication(applicationId)
+    const missingColumns = result.missing_required_columns
+
+    if (result.lab_id) {
+      setProvisionMessages((current) => ({
+        ...current,
+        [applicationId]: `Created lab ${result.lab_id} using columns: ${(result.payload_columns ?? []).join(', ')}`,
+      }))
+      setActivationLabIds((current) => ({
+        ...current,
+        [applicationId]: result.lab_id ?? '',
+      }))
+    } else if (missingColumns && missingColumns.length > 0) {
+      setProvisionMessages((current) => ({
+        ...current,
+        [applicationId]: `Blocked by required labs columns: ${missingColumns.join(', ')}`,
+      }))
+    } else {
+      setProvisionMessages((current) => ({
+        ...current,
+        [applicationId]: result.error ?? 'Provisioning failed',
+      }))
+    }
+
+    setProvisioningId(null)
     reload()
   }
 
@@ -70,6 +104,14 @@ export default function OpsDashboard() {
                       </div>
                       {application.status === 'approved' ? (
                         <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <button
+                            className="rounded-full px-4 py-3 text-[13px] font-bold text-white"
+                            style={{ background: 'var(--teal-dark)' }}
+                            onClick={() => provision(application.id)}
+                            disabled={provisioningId === application.id}
+                          >
+                            {provisioningId === application.id ? 'Provisioning...' : 'Create lab from application'}
+                          </button>
                           <input
                             value={activationLabIds[application.id] ?? ''}
                             onChange={(event) => setActivationLabIds((current) => ({ ...current, [application.id]: event.target.value }))}
@@ -87,6 +129,12 @@ export default function OpsDashboard() {
                           </button>
                         </div>
                       ) : null}
+
+                      {provisionMessages[application.id] ? (
+                        <div className="mt-3 rounded-[16px] p-3 text-[12px] leading-6" style={{ background: '#fff', color: 'var(--text-mid)' }}>
+                          {provisionMessages[application.id]}
+                        </div>
+                      ) : null}
                     </div>
                   )) : (
                     <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
@@ -101,7 +149,7 @@ export default function OpsDashboard() {
                   Ops Notes
                 </h2>
                 <p className="mt-1 text-[13px]" style={{ color: 'var(--text-soft)' }}>
-                  Phase 1 establishes role access and visibility. The next step is attaching approvals to actual onboarding records.
+                  Phase 2 now includes activation handoff and safe schema introspection so lab creation can be built against the real table definition.
                 </p>
                 <div className="mt-5 grid gap-3">
                   {[
@@ -115,6 +163,28 @@ export default function OpsDashboard() {
                       {item}
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-5 rounded-[22px] p-4" style={{ background: 'var(--bg)' }}>
+                  <div className="text-[13px] font-bold" style={{ color: 'var(--text)' }}>
+                    `public.labs` schema visibility
+                  </div>
+                  <div className="mt-2 text-[12px]" style={{ color: 'var(--text-soft)' }}>
+                    {schemaLoading
+                      ? 'Loading real labs columns...'
+                      : schemaError
+                        ? schemaError
+                        : `${columns.length} columns visible via secure schema introspection.`}
+                  </div>
+                  {!schemaLoading && !schemaError && columns.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {columns.slice(0, 10).map((column) => (
+                        <span key={column.column_name} className="rounded-full px-3 py-1.5 text-[11px] font-bold" style={{ background: '#fff', color: 'var(--text-mid)' }}>
+                          {column.column_name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </section>
             </div>

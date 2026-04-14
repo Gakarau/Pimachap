@@ -67,6 +67,31 @@ export function getPartnerDocumentBucket() {
   return process.env.PARTNER_DOCUMENTS_BUCKET || 'partner-documents'
 }
 
+export type SchemaColumn = {
+  column_name: string
+  data_type: string
+  is_nullable: 'YES' | 'NO'
+  column_default: string | null
+}
+
+export async function getTableSchema(
+  tableName: string,
+  serviceClient = createServiceRoleClient()
+): Promise<SchemaColumn[]> {
+  const { data, error } = await serviceClient
+    .from('information_schema.columns')
+    .select('column_name, data_type, is_nullable, column_default')
+    .eq('table_schema', 'public')
+    .eq('table_name', tableName)
+    .order('ordinal_position', { ascending: true })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data ?? []) as SchemaColumn[]
+}
+
 function dedupeRoles(roles: PlatformRole[]) {
   return Array.from(new Set(roles.filter((role) => PLATFORM_ROLES.includes(role))))
 }
