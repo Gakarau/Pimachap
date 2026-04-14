@@ -107,7 +107,7 @@ export default function ResultsPage() {
         <div className="text-5xl mb-4">🛒</div>
         <div className="text-lg font-extrabold mb-2">No tests selected</div>
         <div className="text-[13px] text-[var(--text-soft)] mb-6">Add tests to your basket first</div>
-        <Link href="/search" className="no-underline"><button className="btn btn-teal">Search for tests →</button></Link>
+        <Link href="/search" className="btn btn-teal block text-center no-underline">Search for tests →</Link>
       </div>
     )
   }

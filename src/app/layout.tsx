@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import './globals.css'
 import { CartProvider } from '@/lib/cart-context'
 import { BookingProvider } from '@/lib/booking-context'
@@ -25,13 +26,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-[var(--border)] sticky top-0 z-50">
               <div className="logo-text text-2xl">PIMA<span>CHAP</span></div>
               <nav className="flex items-center gap-8">
-                <a href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Home</a>
-                <a href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Book Tests</a>
-                <a href="/ready-sample" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Ready Sample</a>
-                <a href="/track" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors">Track Order</a>
-                <a href="/login" className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors no-underline">
+                <Link href="/" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Home</Link>
+                <Link href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Book Tests</Link>
+                <Link href="/ready-sample" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Ready Sample</Link>
+                <Link href="/track" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Track Order</Link>
+                <Link href="/login" className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors no-underline">
                   Sign In
-                </a>
+                </Link>
               </nav>
             </header>
 

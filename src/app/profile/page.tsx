@@ -59,9 +59,7 @@ export default function ProfilePage() {
           <div className="text-[12px] text-white/50">Manage orders, save addresses, track results</div>
         </div>
         <div className="px-5 pt-6">
-          <Link href="/login" className="no-underline">
-            <button className="btn btn-teal">Sign In with Phone →</button>
-          </Link>
+          <Link href="/login" className="btn btn-teal block text-center no-underline">Sign In with Phone →</Link>
         </div>
       </div>
     )
@@ -155,9 +153,7 @@ export default function ProfilePage() {
               )
             })}
 
-            <Link href="/search" className="no-underline">
-              <button className="btn btn-teal mt-2">+ Book another test</button>
-            </Link>
+            <Link href="/search" className="btn btn-teal block text-center no-underline mt-2">+ Book another test</Link>
           </>
         )}
 

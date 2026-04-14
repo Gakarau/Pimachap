@@ -14,7 +14,7 @@ export default function PaymentPage() {
       <div className="animate-fade-up p-10 text-center">
         <div className="text-5xl mb-4">💳</div>
         <div className="text-lg font-extrabold mb-2">Missing booking details</div>
-        <Link href="/search" className="no-underline"><button className="btn btn-teal">Start over →</button></Link>
+        <Link href="/search" className="btn btn-teal block text-center no-underline">Start over →</Link>
       </div>
     )
   }

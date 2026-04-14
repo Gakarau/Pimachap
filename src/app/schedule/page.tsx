@@ -12,6 +12,12 @@ interface TimeSlot {
   end_time: string
 }
 
+function getTomorrow() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().split('T')[0]
+}
+
 export default function SchedulePage() {
   const { selectedLab, schedule, setSchedule } = useBooking()
   const router = useRouter()
@@ -33,12 +39,6 @@ export default function SchedulePage() {
     fetchSlots()
   }, [])
 
-  function getTomorrow() {
-    const d = new Date()
-    d.setDate(d.getDate() + 1)
-    return d.toISOString().split('T')[0]
-  }
-
   const proceed = () => {
     if (!selectedSlot || !address.trim()) return
     setSchedule({
@@ -56,7 +56,7 @@ export default function SchedulePage() {
       <div className="animate-fade-up p-10 text-center">
         <div className="text-5xl mb-4">🏥</div>
         <div className="text-lg font-extrabold mb-2">No lab selected</div>
-        <Link href="/results" className="no-underline"><button className="btn btn-teal">Choose a lab first →</button></Link>
+        <Link href="/results" className="btn btn-teal block text-center no-underline">Choose a lab first →</Link>
       </div>
     )
   }

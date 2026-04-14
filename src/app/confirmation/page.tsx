@@ -12,7 +12,7 @@ export default function ConfirmationPage() {
       <div className="animate-fade-up p-10 text-center">
         <div className="text-5xl mb-4">📋</div>
         <div className="text-lg font-extrabold mb-2">No active order</div>
-        <Link href="/" className="no-underline"><button className="btn btn-teal">Go Home →</button></Link>
+        <Link href="/" className="btn btn-teal block text-center no-underline">Go Home →</Link>
       </div>
     )
   }
@@ -111,11 +111,10 @@ export default function ConfirmationPage() {
           </p>
         </div>
 
-        <Link href="/" className="no-underline block">
-          <button className="btn btn-teal mb-2.5">🏠 Back to Home</button>
-        </Link>
-        <Link href="/search" className="no-underline block">
-          <button className="btn" style={{ background: 'var(--bg)', color: 'var(--text-mid)', fontWeight: 600 }}>Book another test</button>
+        <Link href="/" className="btn btn-teal block text-center no-underline mb-2.5">🏠 Back to Home</Link>
+        <Link href="/search" className="btn block text-center no-underline"
+              style={{ background: 'var(--bg)', color: 'var(--text-mid)', fontWeight: 600 }}>
+          Book another test
         </Link>
       </div>
     </div>

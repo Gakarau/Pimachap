@@ -40,60 +40,62 @@ export default async function HomePage() {
   return (
     <div className="animate-fade-up">
 
-      {/* ── Call-to-book banner ── */}
-      <div className="mx-4 sm:mx-0 mb-4 mt-1 rounded-[var(--r)] flex items-center justify-between gap-3 px-4 py-3"
-           style={{ background: 'linear-gradient(90deg, var(--amber-light), #FFF9EC)', border: '1.5px solid var(--amber)' }}>
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl">📞</span>
-          <div>
-            <div className="text-[13px] font-extrabold text-[var(--text)]">Prefer to call? We'll book for you</div>
-            <div className="text-[11px] text-[var(--text-mid)]">Free helpline · Mon–Sat, 7 AM – 8 PM</div>
-          </div>
-        </div>
-        <a href="tel:+254800PIMACHAP"
-           className="shrink-0 px-4 py-2 rounded-full text-[12px] font-extrabold no-underline"
-           style={{ background: 'var(--amber)', color: 'var(--teal-dark)' }}>
-          Call now
-        </a>
-      </div>
-
       {/* ── Mobile Hero ── */}
-      <div className="md:hidden mx-0 mb-5"
-           style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 55%, var(--teal-light) 100%)', padding: '22px 20px 32px', borderRadius: '0 0 36px 36px' }}>
+      <div className="relative md:hidden mx-0 mb-5 overflow-hidden"
+           style={{ background: 'linear-gradient(145deg, var(--teal-dark) 0%, var(--teal) 55%, var(--teal-light) 100%)', borderRadius: '0 0 36px 36px' }}>
         {/* Decorative dots */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
+        <div className="absolute inset-0 pointer-events-none">
           <div className="absolute w-48 h-48 rounded-full border-[40px] border-white/[0.05] -top-16 -right-16" />
           <div className="absolute w-28 h-28 rounded-full border-[28px] border-white/[0.05] bottom-4 -left-10" />
         </div>
 
-        <div className="relative flex items-center justify-between mb-5">
-          <div>
-            <div className="text-[12px] text-white/60 font-medium">Good morning 👋</div>
-            <div className="text-[21px] font-extrabold text-white leading-tight">Welcome to<br />Pimachap</div>
+        <div className="relative px-5 pt-[22px] pb-5">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <div className="text-[12px] text-white/60 font-medium">Good morning 👋</div>
+              <div className="text-[21px] font-extrabold text-white leading-tight">Welcome to<br />Pimachap</div>
+            </div>
+            <div className="logo-text text-white" style={{ fontSize: '18px', color: '#fff' }}>
+              PIMA<span style={{ color: 'var(--amber)' }}>CHAP</span>
+            </div>
           </div>
-          <div className="logo-text text-white" style={{ fontSize: '18px', color: '#fff' }}>
-            PIMA<span style={{ color: 'var(--amber)' }}>CHAP</span>
+
+          <div className="flex items-center gap-2.5 mb-4"
+               style={{ background: 'rgba(255,255,255,.12)', border: '1.5px solid rgba(255,255,255,.2)', borderRadius: '12px', padding: '10px 14px' }}>
+            <span>📍</span>
+            <span className="flex-1 text-[13px] text-white/70 font-medium">Nairobi, Kenya</span>
+            <span className="text-[12px] font-bold" style={{ color: 'var(--amber)' }}>Change</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <Link href="/search"
+                  className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
+                  style={{ background: 'rgba(255,255,255,.18)', border: '1.5px solid rgba(255,255,255,.25)', backdropFilter: 'blur(8px)' }}>
+              🔍 Book a Test
+            </Link>
+            <Link href="/ready-sample"
+                  className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
+                  style={{ background: 'var(--orange)', boxShadow: '0 4px 14px rgba(234,88,12,.4)' }}>
+              📦 Ready Sample
+            </Link>
           </div>
         </div>
 
-        <div className="relative flex items-center gap-2.5 mb-4"
-             style={{ background: 'rgba(255,255,255,.12)', border: '1.5px solid rgba(255,255,255,.2)', borderRadius: '12px', padding: '10px 14px' }}>
-          <span>📍</span>
-          <span className="flex-1 text-[13px] text-white/70 font-medium">Nairobi, Kenya</span>
-          <span className="text-[12px] font-bold" style={{ color: 'var(--amber)' }}>Change</span>
-        </div>
-
-        <div className="relative grid grid-cols-2 gap-2.5">
-          <Link href="/search"
-                className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
-                style={{ background: 'rgba(255,255,255,.18)', border: '1.5px solid rgba(255,255,255,.25)', backdropFilter: 'blur(8px)' }}>
-            🔍 Book a Test
-          </Link>
-          <Link href="/ready-sample"
-                className="p-3.5 rounded-2xl text-white text-[13px] font-extrabold text-center no-underline"
-                style={{ background: 'var(--orange)', boxShadow: '0 4px 14px rgba(234,88,12,.4)' }}>
-            📦 Ready Sample
-          </Link>
+        {/* Call-to-book — integrated at the bottom of the hero */}
+        <div className="relative flex items-center justify-between gap-3 px-5 py-3"
+             style={{ background: 'rgba(0,0,0,.18)', borderTop: '1px solid rgba(255,255,255,.12)' }}>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base">📞</span>
+            <div>
+              <div className="text-[12px] font-extrabold text-white leading-tight">Prefer to call? We'll book for you</div>
+              <div className="text-[10px] text-white/55">Free helpline · Mon–Sat, 7 AM – 8 PM</div>
+            </div>
+          </div>
+          <a href="tel:+254800PIMACHAP"
+             className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-extrabold no-underline"
+             style={{ background: 'var(--amber)', color: 'var(--teal-dark)' }}>
+            Call now
+          </a>
         </div>
       </div>
 
