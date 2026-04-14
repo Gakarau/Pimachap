@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import type { PlatformRole, RoleProfile } from '@/lib/rbac'
 import { PLATFORM_ROLES } from '@/lib/rbac'
@@ -116,5 +117,41 @@ export async function resolveServerRoleProfile(request: NextRequest): Promise<Ro
     primaryRole,
     scopedLabIds: memberships.map((membership) => membership.lab_id),
     displayName: staff?.display_name ?? 'Platform User',
+  }
+}
+
+export function createPlatformServiceClient() {
+  return createServiceRoleClient()
+}
+
+export function hasRequiredRole(profile: RoleProfile | null, allowedRoles: PlatformRole[]) {
+  if (!profile) {
+    return false
+  }
+
+  return allowedRoles.some((role) => profile.roles.includes(role))
+}
+
+export async function requireServerRoleProfile(request: NextRequest, allowedRoles: PlatformRole[]) {
+  const profile = await resolveServerRoleProfile(request)
+
+  if (!profile) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: 'Unauthenticated' }, { status: 401 }),
+    }
+  }
+
+  if (!hasRequiredRole(profile, allowedRoles)) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
+    }
+  }
+
+  return {
+    ok: true as const,
+    profile,
+    serviceClient: createServiceRoleClient(),
   }
 }

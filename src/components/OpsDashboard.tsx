@@ -1,11 +1,19 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
+import { usePartnerApplications } from '@/lib/use-partner-applications'
 import { usePlatformData } from '@/lib/use-platform-data'
 
 export default function OpsDashboard() {
   const { data, loading, error, summary } = usePlatformData()
+  const { applications } = usePartnerApplications()
+  const activationQueue = useMemo(
+    () => applications.filter((application) => application.status === 'approved' || application.status === 'submitted' || application.status === 'under_review'),
+    [applications]
+  )
 
   return (
     <ProtectedWorkspace allowedRoles={['owner', 'ops']}>
@@ -28,29 +36,30 @@ export default function OpsDashboard() {
                   Activation Queue
                 </h2>
                 <p className="mt-1 text-[13px]" style={{ color: 'var(--text-soft)' }}>
-                  Current labs sorted by available-test coverage, which is the best current proxy for onboarding completeness.
+                  Applications that operations needs to activate and move into the live network.
                 </p>
                 <div className="mt-5 space-y-3">
-                  {summary.labCoverage.map((lab) => (
-                    <div key={lab.id} className="rounded-[22px] p-4" style={{ background: 'var(--bg)' }}>
+                  {activationQueue.length > 0 ? activationQueue.map((application) => (
+                    <div key={application.id} className="rounded-[22px] p-4" style={{ background: 'var(--bg)' }}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-[15px] font-extrabold" style={{ color: 'var(--text)' }}>
-                            {lab.name}
+                            {application.legal_name}
                           </div>
                           <div className="mt-1 text-[12px]" style={{ color: 'var(--text-soft)' }}>
-                            {lab.town}
+                            {application.town ?? 'Town not set'}
                           </div>
                         </div>
-                        <span className="text-[12px] font-bold" style={{ color: lab.is_active ? 'var(--green)' : '#9A6500' }}>
-                          {lab.is_active ? 'Active' : 'Pending activation'}
+                        <span className="text-[12px] font-bold uppercase" style={{ color: application.status === 'approved' ? 'var(--green)' : '#9A6500' }}>
+                          {application.status}
                         </span>
                       </div>
-                      <div className="mt-3 text-[13px]" style={{ color: 'var(--text-mid)' }}>
-                        Available tests: <strong>{lab.availableTests}</strong>
-                      </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
+                      No pending partner applications yet.
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -64,6 +73,7 @@ export default function OpsDashboard() {
                 <div className="mt-5 grid gap-3">
                   {[
                     `${summary.activeLabs} labs are currently marked active.`,
+                    `${activationQueue.length} applications are in the onboarding queue.`,
                     `${summary.activeSlots} collection slots are active for booking.`,
                     `${summary.activeTests} tests are active in the catalog.`,
                     error || 'No data load errors detected in the operations workspace.',

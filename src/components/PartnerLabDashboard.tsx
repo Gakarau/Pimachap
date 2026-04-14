@@ -1,11 +1,87 @@
 'use client'
 
+import { useState } from 'react'
+
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
+import {
+  createPartnerApplication,
+  createPartnerDocument,
+  loadPartnerDocuments,
+  usePartnerApplications,
+  type PartnerDocument,
+} from '@/lib/use-partner-applications'
 import { usePlatformData } from '@/lib/use-platform-data'
 
 export default function PartnerLabDashboard() {
   const { data, loading } = usePlatformData()
+  const { applications, loading: applicationsLoading, error, reload } = usePartnerApplications()
+  const [submitting, setSubmitting] = useState(false)
+  const [documentBusy, setDocumentBusy] = useState<string | null>(null)
+  const [documentsByApplication, setDocumentsByApplication] = useState<Record<string, PartnerDocument[]>>({})
+  const [form, setForm] = useState({
+    legal_name: '',
+    trading_name: '',
+    town: '',
+    contact_name: '',
+    contact_phone: '',
+    contact_email: '',
+    notes: '',
+  })
+  const [documentForm, setDocumentForm] = useState<Record<string, { document_type: string; file_path: string }>>({})
+
+  async function submitApplication() {
+    setSubmitting(true)
+    await createPartnerApplication(form)
+    setForm({
+      legal_name: '',
+      trading_name: '',
+      town: '',
+      contact_name: '',
+      contact_phone: '',
+      contact_email: '',
+      notes: '',
+    })
+    setSubmitting(false)
+    reload()
+  }
+
+  async function toggleDocuments(applicationId: string) {
+    if (documentsByApplication[applicationId]) {
+      setDocumentsByApplication((current) => {
+        const next = { ...current }
+        delete next[applicationId]
+        return next
+      })
+      return
+    }
+
+    const payload = await loadPartnerDocuments(applicationId)
+    setDocumentsByApplication((current) => ({
+      ...current,
+      [applicationId]: payload.documents ?? [],
+    }))
+  }
+
+  async function addDocument(applicationId: string) {
+    const current = documentForm[applicationId]
+    if (!current?.document_type || !current.file_path) {
+      return
+    }
+
+    setDocumentBusy(applicationId)
+    await createPartnerDocument(applicationId, current)
+    const payload = await loadPartnerDocuments(applicationId)
+    setDocumentsByApplication((existing) => ({
+      ...existing,
+      [applicationId]: payload.documents ?? [],
+    }))
+    setDocumentForm((existing) => ({
+      ...existing,
+      [applicationId]: { document_type: '', file_path: '' },
+    }))
+    setDocumentBusy(null)
+  }
 
   return (
     <ProtectedWorkspace allowedRoles={['owner', 'ops', 'partner_lab']}>
@@ -17,7 +93,7 @@ export default function PartnerLabDashboard() {
           <RoleWorkspace
             role="partner_lab"
             title="Partner lab self-service workspace."
-            subtitle="Partner labs are restricted by assigned lab IDs. This is the Phase 1 foundation for letting approved labs manage their own pricing and availability."
+            subtitle="Partner labs are restricted by assigned lab IDs. This workspace now includes real application intake and KYC document record submission."
           >
             {loading || !data ? (
               <div className="rounded-[28px] border bg-white p-6" style={{ borderColor: 'var(--border)', boxShadow: 'var(--sh)' }}>
@@ -41,29 +117,129 @@ export default function PartnerLabDashboard() {
                     <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
                       Visible pricing rows: {scopedPricing.length}
                     </div>
+                    {error ? (
+                      <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--amber-light)', color: '#9A6500' }}>
+                        {error}
+                      </div>
+                    ) : null}
                   </div>
                 </section>
 
                 <section className="rounded-[28px] border bg-white p-5 md:p-6" style={{ borderColor: 'var(--border)', boxShadow: 'var(--sh)' }}>
-                  <h2 className="text-[20px] font-extrabold" style={{ color: 'var(--text)' }}>
-                    Scoped Labs
-                  </h2>
+                  <h2 className="text-[20px] font-extrabold" style={{ color: 'var(--text)' }}>Submit Partner Application</h2>
+                  <div className="mt-5 grid gap-3">
+                    {[
+                      ['legal_name', 'Legal name'],
+                      ['trading_name', 'Trading name'],
+                      ['town', 'Town'],
+                      ['contact_name', 'Contact name'],
+                      ['contact_phone', 'Contact phone'],
+                      ['contact_email', 'Contact email'],
+                    ].map(([key, label]) => (
+                      <input
+                        key={key}
+                        value={form[key as keyof typeof form]}
+                        onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))}
+                        placeholder={label}
+                        className="w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
+                        style={{ borderColor: 'var(--border)' }}
+                      />
+                    ))}
+                    <textarea
+                      value={form.notes}
+                      onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
+                      placeholder="Notes"
+                      className="min-h-[96px] w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
+                      style={{ borderColor: 'var(--border)' }}
+                    />
+                    <button className="rounded-full px-4 py-3 text-[14px] font-bold text-white" style={{ background: 'var(--teal)' }} onClick={submitApplication} disabled={submitting}>
+                      {submitting ? 'Submitting...' : 'Submit application'}
+                    </button>
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {!loading && (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+                <section className="rounded-[28px] border bg-white p-5 md:p-6" style={{ borderColor: 'var(--border)', boxShadow: 'var(--sh)' }}>
+                  <h2 className="text-[20px] font-extrabold" style={{ color: 'var(--text)' }}>Scoped Labs</h2>
                   <div className="mt-5 space-y-3">
                     {scopedLabs.length > 0 ? (
                       scopedLabs.map((lab) => (
                         <div key={lab.id} className="rounded-[22px] p-4" style={{ background: 'var(--bg)' }}>
-                          <div className="text-[15px] font-extrabold" style={{ color: 'var(--text)' }}>
-                            {lab.name}
-                          </div>
-                          <div className="mt-1 text-[12px]" style={{ color: 'var(--text-soft)' }}>
-                            {lab.town}
-                          </div>
+                          <div className="text-[15px] font-extrabold" style={{ color: 'var(--text)' }}>{lab.name}</div>
+                          <div className="mt-1 text-[12px]" style={{ color: 'var(--text-soft)' }}>{lab.town}</div>
                         </div>
                       ))
                     ) : (
                       <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
                         No lab IDs have been assigned to this partner account yet.
                       </div>
+                    )}
+                  </div>
+                </section>
+
+                <section className="rounded-[28px] border bg-white p-5 md:p-6" style={{ borderColor: 'var(--border)', boxShadow: 'var(--sh)' }}>
+                  <h2 className="text-[20px] font-extrabold" style={{ color: 'var(--text)' }}>My Applications</h2>
+                  <div className="mt-5 space-y-3">
+                    {applicationsLoading ? (
+                      <div className="rounded-[22px] p-4 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>Loading applications...</div>
+                    ) : applications.length === 0 ? (
+                      <div className="rounded-[22px] p-4 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>No applications submitted yet.</div>
+                    ) : (
+                      applications.map((application) => (
+                        <div key={application.id} className="rounded-[22px] p-4" style={{ background: 'var(--bg)' }}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-[15px] font-extrabold" style={{ color: 'var(--text)' }}>{application.legal_name}</div>
+                              <div className="mt-1 text-[12px]" style={{ color: 'var(--text-soft)' }}>{application.status}</div>
+                            </div>
+                            <button className="rounded-full px-3 py-1.5 text-[12px] font-bold" style={{ background: 'var(--teal-pale)', color: 'var(--teal-dark)' }} onClick={() => toggleDocuments(application.id)}>
+                              {documentsByApplication[application.id] ? 'Hide docs' : 'View docs'}
+                            </button>
+                          </div>
+
+                          {documentsByApplication[application.id] ? (
+                            <div className="mt-4 space-y-3">
+                              {(documentsByApplication[application.id] ?? []).map((document) => (
+                                <div key={document.id} className="rounded-[18px] p-3 text-[12px]" style={{ background: '#fff' }}>
+                                  {document.document_type} · {document.file_path} · {document.status}
+                                </div>
+                              ))}
+                              <input
+                                value={documentForm[application.id]?.document_type ?? ''}
+                                onChange={(event) => setDocumentForm((current) => ({
+                                  ...current,
+                                  [application.id]: {
+                                    document_type: event.target.value,
+                                    file_path: current[application.id]?.file_path ?? '',
+                                  },
+                                }))}
+                                placeholder="Document type"
+                                className="w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
+                                style={{ borderColor: 'var(--border)' }}
+                              />
+                              <input
+                                value={documentForm[application.id]?.file_path ?? ''}
+                                onChange={(event) => setDocumentForm((current) => ({
+                                  ...current,
+                                  [application.id]: {
+                                    document_type: current[application.id]?.document_type ?? '',
+                                    file_path: event.target.value,
+                                  },
+                                }))}
+                                placeholder="File path or storage key"
+                                className="w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
+                                style={{ borderColor: 'var(--border)' }}
+                              />
+                              <button className="rounded-full px-3 py-2 text-[12px] font-bold text-white" style={{ background: 'var(--teal)' }} onClick={() => addDocument(application.id)} disabled={documentBusy === application.id}>
+                                {documentBusy === application.id ? 'Saving...' : 'Add document record'}
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))
                     )}
                   </div>
                 </section>
