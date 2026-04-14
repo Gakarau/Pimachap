@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function PaymentPage() {
-  const { cart, clearCart } = useCart()
-  const { selectedLab, schedule, delivery, setOrderNumber, resetBooking } = useBooking()
+  const { cart } = useCart()
+  const { selectedLab, schedule, delivery, setOrderNumber } = useBooking()
   const router = useRouter()
 
   if (!selectedLab || !schedule) {

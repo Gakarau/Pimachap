@@ -36,10 +36,10 @@ export default function SearchPage() {
 
 function SearchContent() {
   const [tests, setTests] = useState<Test[]>([])
-  const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const { cart, toggleCart, isInCart } = useCart()
   const searchParams = useSearchParams()
+  const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
 
   // Load tests from Supabase
   useEffect(() => {
@@ -54,12 +54,6 @@ function SearchContent() {
     }
     fetchTests()
   }, [])
-
-  // Pick up query from URL params (from home page chips)
-  useEffect(() => {
-    const q = searchParams.get('q')
-    if (q) setQuery(q)
-  }, [searchParams])
 
   // Filter tests
   const filtered = useMemo(() => {

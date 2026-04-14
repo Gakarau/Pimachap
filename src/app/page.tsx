@@ -100,7 +100,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-2.5">
             <span className="text-base">📞</span>
             <div>
-              <div className="text-[12px] font-extrabold text-white leading-tight">Prefer to call? We'll book for you</div>
+              <div className="text-[12px] font-extrabold text-white leading-tight">Prefer to call? We&apos;ll book for you</div>
               <div className="text-[10px] text-white/55">Free helpline · Mon–Sat, 7 AM – 8 PM</div>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-[17px] font-extrabold">Why choose Pimachap?</h3>
           </div>
-          <p className="text-[12px] text-[var(--text-soft)] mb-4">Nairobi's only diagnostics marketplace built for you.</p>
+          <p className="text-[12px] text-[var(--text-soft)] mb-4">Nairobi&apos;s only diagnostics marketplace built for you.</p>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {WHY_US.map(item => (

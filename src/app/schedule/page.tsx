@@ -19,7 +19,7 @@ function getTomorrow() {
 }
 
 export default function SchedulePage() {
-  const { selectedLab, schedule, setSchedule } = useBooking()
+  const { selectedLab, setSchedule } = useBooking()
   const router = useRouter()
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [date, setDate] = useState(getTomorrow())
