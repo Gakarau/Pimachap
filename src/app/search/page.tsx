@@ -202,7 +202,7 @@ function SearchContent() {
 
       {/* Floating CTA */}
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 w-full max-w-6xl mx-auto px-5 pb-6 pt-3.5 bg-white border-t-[1.5px] border-[var(--border)] z-50">
+        <div className="fixed bottom-[72px] md:bottom-0 left-0 right-0 w-full max-w-6xl mx-auto px-5 pb-4 pt-3 bg-white border-t-[1.5px] border-[var(--border)] z-50">
           <Link href="/cart" className="no-underline">
             <button className="btn btn-teal text-[15px]">
               🛒 View basket · {cart.length} test{cart.length > 1 ? 's' : ''}
