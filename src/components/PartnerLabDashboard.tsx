@@ -8,6 +8,7 @@ import {
   createPartnerApplication,
   createPartnerDocument,
   loadPartnerDocuments,
+  uploadPartnerDocument,
   usePartnerApplications,
   type PartnerDocument,
 } from '@/lib/use-partner-applications'
@@ -19,6 +20,7 @@ export default function PartnerLabDashboard() {
   const [submitting, setSubmitting] = useState(false)
   const [documentBusy, setDocumentBusy] = useState<string | null>(null)
   const [documentsByApplication, setDocumentsByApplication] = useState<Record<string, PartnerDocument[]>>({})
+  const [uploadFiles, setUploadFiles] = useState<Record<string, File | null>>({})
   const [form, setForm] = useState({
     legal_name: '',
     trading_name: '',
@@ -79,6 +81,30 @@ export default function PartnerLabDashboard() {
     setDocumentForm((existing) => ({
       ...existing,
       [applicationId]: { document_type: '', file_path: '' },
+    }))
+    setDocumentBusy(null)
+  }
+
+  async function uploadDocument(applicationId: string) {
+    const current = documentForm[applicationId]
+    const file = uploadFiles[applicationId]
+    if (!current?.document_type || !file) {
+      return
+    }
+
+    setDocumentBusy(applicationId)
+    await uploadPartnerDocument(applicationId, {
+      document_type: current.document_type,
+      file,
+    })
+    const payload = await loadPartnerDocuments(applicationId)
+    setDocumentsByApplication((existing) => ({
+      ...existing,
+      [applicationId]: payload.documents ?? [],
+    }))
+    setUploadFiles((existing) => ({
+      ...existing,
+      [applicationId]: null,
     }))
     setDocumentBusy(null)
   }
@@ -204,7 +230,20 @@ export default function PartnerLabDashboard() {
                             <div className="mt-4 space-y-3">
                               {(documentsByApplication[application.id] ?? []).map((document) => (
                                 <div key={document.id} className="rounded-[18px] p-3 text-[12px]" style={{ background: '#fff' }}>
-                                  {document.document_type} · {document.file_path} · {document.status}
+                                  <div className="font-bold" style={{ color: 'var(--text)' }}>
+                                    {document.document_type}
+                                  </div>
+                                  <div className="mt-1" style={{ color: 'var(--text-soft)' }}>
+                                    {document.file_path}
+                                  </div>
+                                  <div className="mt-1" style={{ color: 'var(--text-mid)' }}>
+                                    Status: {document.status}
+                                  </div>
+                                  {document.rejection_reason ? (
+                                    <div className="mt-2 rounded-[12px] px-3 py-2" style={{ background: 'var(--amber-light)', color: '#9A6500' }}>
+                                      Reason: {document.rejection_reason}
+                                    </div>
+                                  ) : null}
                                 </div>
                               ))}
                               <input
@@ -233,8 +272,20 @@ export default function PartnerLabDashboard() {
                                 className="w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
                                 style={{ borderColor: 'var(--border)' }}
                               />
+                              <input
+                                type="file"
+                                onChange={(event) => setUploadFiles((current) => ({
+                                  ...current,
+                                  [application.id]: event.target.files?.[0] ?? null,
+                                }))}
+                                className="w-full rounded-[14px] border bg-white px-4 py-3 text-[14px] outline-none"
+                                style={{ borderColor: 'var(--border)' }}
+                              />
                               <button className="rounded-full px-3 py-2 text-[12px] font-bold text-white" style={{ background: 'var(--teal)' }} onClick={() => addDocument(application.id)} disabled={documentBusy === application.id}>
                                 {documentBusy === application.id ? 'Saving...' : 'Add document record'}
+                              </button>
+                              <button className="rounded-full px-3 py-2 text-[12px] font-bold text-white" style={{ background: 'var(--teal-dark)' }} onClick={() => uploadDocument(application.id)} disabled={documentBusy === application.id}>
+                                {documentBusy === application.id ? 'Uploading...' : 'Upload file to storage'}
                               </button>
                             </div>
                           ) : null}

@@ -30,6 +30,7 @@ Add this on the server side:
 
 ```env
 SUPABASE_SERVICE_ROLE_KEY=...
+PARTNER_DOCUMENTS_BUCKET=partner-documents
 ```
 
 Do not expose the service-role key to the browser.

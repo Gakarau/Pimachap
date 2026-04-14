@@ -1,19 +1,33 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
-import { usePartnerApplications } from '@/lib/use-partner-applications'
+import { activatePartnerApplication, usePartnerApplications } from '@/lib/use-partner-applications'
 import { usePlatformData } from '@/lib/use-platform-data'
 
 export default function OpsDashboard() {
   const { data, loading, error, summary } = usePlatformData()
-  const { applications } = usePartnerApplications()
+  const { applications, reload } = usePartnerApplications()
+  const [activationLabIds, setActivationLabIds] = useState<Record<string, string>>({})
+  const [activatingId, setActivatingId] = useState<string | null>(null)
   const activationQueue = useMemo(
     () => applications.filter((application) => application.status === 'approved' || application.status === 'submitted' || application.status === 'under_review'),
     [applications]
   )
+
+  async function activate(applicationId: string) {
+    const labId = activationLabIds[applicationId]
+    if (!labId) {
+      return
+    }
+
+    setActivatingId(applicationId)
+    await activatePartnerApplication(applicationId, labId)
+    setActivatingId(null)
+    reload()
+  }
 
   return (
     <ProtectedWorkspace allowedRoles={['owner', 'ops']}>
@@ -54,6 +68,25 @@ export default function OpsDashboard() {
                           {application.status}
                         </span>
                       </div>
+                      {application.status === 'approved' ? (
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <input
+                            value={activationLabIds[application.id] ?? ''}
+                            onChange={(event) => setActivationLabIds((current) => ({ ...current, [application.id]: event.target.value }))}
+                            placeholder="Existing lab ID to activate"
+                            className="min-w-[240px] rounded-[14px] border bg-white px-4 py-3 text-[13px] outline-none"
+                            style={{ borderColor: 'var(--border)' }}
+                          />
+                          <button
+                            className="rounded-full px-4 py-3 text-[13px] font-bold text-white"
+                            style={{ background: 'var(--teal)' }}
+                            onClick={() => activate(application.id)}
+                            disabled={activatingId === application.id}
+                          >
+                            {activatingId === application.id ? 'Activating...' : 'Activate'}
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   )) : (
                     <div className="rounded-[22px] p-4 text-[13px] leading-6" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>

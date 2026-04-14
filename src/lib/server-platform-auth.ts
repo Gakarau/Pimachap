@@ -63,6 +63,10 @@ function createServiceRoleClient() {
   })
 }
 
+export function getPartnerDocumentBucket() {
+  return process.env.PARTNER_DOCUMENTS_BUCKET || 'partner-documents'
+}
+
 function dedupeRoles(roles: PlatformRole[]) {
   return Array.from(new Set(roles.filter((role) => PLATFORM_ROLES.includes(role))))
 }

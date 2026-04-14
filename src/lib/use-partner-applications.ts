@@ -154,3 +154,55 @@ export async function createPartnerDocument(
 
   return response.json()
 }
+
+export async function updatePartnerDocument(
+  documentId: string,
+  input: {
+    status: 'uploaded' | 'under_review' | 'approved' | 'rejected'
+    rejection_reason?: string
+  }
+) {
+  const response = await fetch(`/api/platform/documents/${documentId}`, {
+    method: 'PATCH',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(input),
+  })
+
+  return response.json()
+}
+
+export async function uploadPartnerDocument(
+  applicationId: string,
+  input: {
+    document_type: string
+    file: File
+  }
+) {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  const formData = new FormData()
+  formData.append('document_type', input.document_type)
+  formData.append('file', input.file)
+
+  const response = await fetch(`/api/platform/applications/${applicationId}/documents/upload`, {
+    method: 'POST',
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined,
+    body: formData,
+  })
+
+  return response.json()
+}
+
+export async function activatePartnerApplication(applicationId: string, labId: string) {
+  const response = await fetch(`/api/platform/applications/${applicationId}/activate`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ lab_id: labId }),
+  })
+
+  return response.json()
+}

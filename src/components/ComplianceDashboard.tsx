@@ -4,7 +4,13 @@ import { useState } from 'react'
 
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
-import { updatePartnerApplication, usePartnerApplications } from '@/lib/use-partner-applications'
+import {
+  loadPartnerDocuments,
+  updatePartnerApplication,
+  updatePartnerDocument,
+  usePartnerApplications,
+  type PartnerDocument,
+} from '@/lib/use-partner-applications'
 
 const checks = [
   'Business registration documents',
@@ -17,6 +23,9 @@ const checks = [
 export default function ComplianceDashboard() {
   const { applications, loading, error, reload } = usePartnerApplications()
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [documentsByApplication, setDocumentsByApplication] = useState<Record<string, PartnerDocument[]>>({})
+  const [documentBusyId, setDocumentBusyId] = useState<string | null>(null)
+  const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({})
 
   async function decide(id: string, status: 'under_review' | 'approved' | 'rejected', decision?: 'approved' | 'rejected' | 'needs_changes') {
     setBusyId(id)
@@ -27,6 +36,41 @@ export default function ComplianceDashboard() {
     })
     setBusyId(null)
     reload()
+  }
+
+  async function toggleDocuments(applicationId: string) {
+    if (documentsByApplication[applicationId]) {
+      setDocumentsByApplication((current) => {
+        const next = { ...current }
+        delete next[applicationId]
+        return next
+      })
+      return
+    }
+
+    const payload = await loadPartnerDocuments(applicationId)
+    setDocumentsByApplication((current) => ({
+      ...current,
+      [applicationId]: payload.documents ?? [],
+    }))
+  }
+
+  async function reviewDocument(
+    applicationId: string,
+    documentId: string,
+    status: 'under_review' | 'approved' | 'rejected'
+  ) {
+    setDocumentBusyId(documentId)
+    await updatePartnerDocument(documentId, {
+      status,
+      rejection_reason: status === 'rejected' ? rejectionReasons[documentId] ?? 'Rejected during compliance review.' : undefined,
+    })
+    const payload = await loadPartnerDocuments(applicationId)
+    setDocumentsByApplication((current) => ({
+      ...current,
+      [applicationId]: payload.documents ?? [],
+    }))
+    setDocumentBusyId(null)
   }
 
   return (
@@ -58,6 +102,9 @@ export default function ComplianceDashboard() {
                         <span className="text-[12px] font-bold uppercase" style={{ color: 'var(--teal-dark)' }}>{application.status}</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
+                        <button className="rounded-full px-3 py-1.5 text-[12px] font-bold" style={{ background: 'var(--teal-pale)', color: 'var(--teal-dark)' }} onClick={() => toggleDocuments(application.id)}>
+                          {documentsByApplication[application.id] ? 'Hide docs' : 'Review docs'}
+                        </button>
                         <button className="rounded-full px-3 py-1.5 text-[12px] font-bold" style={{ background: 'var(--amber-light)', color: '#9A6500' }} onClick={() => decide(application.id, 'under_review')} disabled={busyId === application.id}>
                           Start review
                         </button>
@@ -68,6 +115,53 @@ export default function ComplianceDashboard() {
                           Reject
                         </button>
                       </div>
+
+                      {documentsByApplication[application.id] ? (
+                        <div className="mt-4 space-y-3">
+                          {(documentsByApplication[application.id] ?? []).length > 0 ? (
+                            (documentsByApplication[application.id] ?? []).map((document) => (
+                              <div key={document.id} className="rounded-[18px] bg-white p-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <div className="text-[13px] font-bold" style={{ color: 'var(--text)' }}>
+                                      {document.document_type}
+                                    </div>
+                                    <div className="mt-1 text-[12px]" style={{ color: 'var(--text-soft)' }}>
+                                      {document.file_path}
+                                    </div>
+                                    <div className="mt-1 text-[12px]" style={{ color: 'var(--text-mid)' }}>
+                                      Status: {document.status}
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    <button className="rounded-full px-3 py-1.5 text-[11px] font-bold" style={{ background: 'var(--amber-light)', color: '#9A6500' }} onClick={() => reviewDocument(application.id, document.id, 'under_review')} disabled={documentBusyId === document.id}>
+                                      Review
+                                    </button>
+                                    <button className="rounded-full px-3 py-1.5 text-[11px] font-bold" style={{ background: 'var(--green-pale)', color: 'var(--green)' }} onClick={() => reviewDocument(application.id, document.id, 'approved')} disabled={documentBusyId === document.id}>
+                                      Approve
+                                    </button>
+                                    <button className="rounded-full px-3 py-1.5 text-[11px] font-bold" style={{ background: 'var(--red-pale)', color: 'var(--red)' }} onClick={() => reviewDocument(application.id, document.id, 'rejected')} disabled={documentBusyId === document.id}>
+                                      Reject
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <input
+                                  value={rejectionReasons[document.id] ?? ''}
+                                  onChange={(event) => setRejectionReasons((current) => ({ ...current, [document.id]: event.target.value }))}
+                                  placeholder="Rejection reason if needed"
+                                  className="mt-3 w-full rounded-[12px] border bg-[var(--bg)] px-3 py-2 text-[12px] outline-none"
+                                  style={{ borderColor: 'var(--border)' }}
+                                />
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-[18px] bg-white p-3 text-[12px]" style={{ color: 'var(--text-mid)' }}>
+                              No documents uploaded yet for this application.
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   ))
                 )}
