@@ -3,6 +3,8 @@ import Link from 'next/link'
 import './globals.css'
 import { CartProvider } from '@/lib/cart-context'
 import { BookingProvider } from '@/lib/booking-context'
+import { ThemeProvider } from '@/lib/theme-context'
+import ThemeToggle from '@/components/ThemeToggle'
 import BottomNav from '@/components/BottomNav'
 
 export const metadata: Metadata = {
@@ -12,14 +14,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap"
           rel="stylesheet"
         />
+        {/* Prevent flash of wrong theme before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();` }} />
       </head>
       <body>
+        <ThemeProvider>
         <CartProvider>
           <BookingProvider>
             {/* Desktop top bar */}
@@ -30,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/search" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Book Tests</Link>
                 <Link href="/ready-sample" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Ready Sample</Link>
                 <Link href="/track" className="text-sm font-bold text-[var(--text-mid)] hover:text-[var(--teal)] transition-colors no-underline">Track Order</Link>
+                <ThemeToggle variant="header" />
                 <Link href="/login" className="px-5 py-2.5 bg-[var(--teal)] text-white text-sm font-bold rounded-full hover:bg-[var(--teal-dark)] transition-colors no-underline">
                   Sign In
                 </Link>
@@ -45,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <BottomNav />
           </BookingProvider>
         </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

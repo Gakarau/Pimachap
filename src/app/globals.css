@@ -170,6 +170,50 @@ body {
   box-shadow: var(--sh);
 }
 
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --teal: #14B8BE;
+  --teal-dark: #0A8F94;
+  --teal-light: #22D3D9;
+  --teal-pale: #0C2E30;
+  --amber: #F7A800;
+  --amber-light: #291A00;
+  --green: #4ADE80;
+  --green-pale: #052E16;
+  --purple: #A78BFA;
+  --purple-pale: #1E1147;
+  --blue: #60A5FA;
+  --blue-pale: #0F2044;
+  --orange: #FB923C;
+  --orange-pale: #2C1000;
+  --red: #F87171;
+  --red-pale: #450A0A;
+  --coral: #FB7185;
+  --coral-pale: #4C0519;
+  --text: #F1F5F9;
+  --text-mid: #CBD5E1;
+  --text-soft: #64748B;
+  --border: #334155;
+  --bg: #0F172A;
+  --white: #1E293B;
+  --sh: 0 2px 16px rgba(0, 0, 0, 0.4);
+  --sh-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Adapt Tailwind's hardcoded bg-white in dark mode */
+[data-theme="dark"] .bg-white {
+  background-color: var(--white);
+}
+
+/* Adapt native inputs / textareas */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--white);
+  color: var(--text);
+  border-color: var(--border);
+}
+
 /* Animations */
 @keyframes fadeUp {
   from {

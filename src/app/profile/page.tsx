@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const MOCK_ORDERS = [
   {
@@ -178,6 +179,12 @@ export default function ProfilePage() {
                   <button className="text-[12px] font-bold text-[var(--teal)] border-none bg-transparent cursor-pointer">Edit</button>
                 </div>
               ))}
+            </div>
+
+            {/* Appearance */}
+            <div className="text-[11px] font-bold text-[var(--text-soft)] uppercase tracking-wider mb-3">Appearance</div>
+            <div className="card mb-4">
+              <ThemeToggle variant="row" />
             </div>
 
             {/* Notifications */}

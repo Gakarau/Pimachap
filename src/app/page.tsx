@@ -8,10 +8,23 @@ const sampleIcons: Record<string, string> = {
 
 // Category icons
 const catIcons: Record<string, string> = {
-  haematology: '🩸', diabetes: '🍬', lipids: '❤️', liver: '🫀', kidney: '🫘',
-  thyroid: '🦋', infectious: '🦠', hormones: '🧬', vitamins: '☀️',
-  tumour_markers: '🔵', urinalysis: '💧', microbiology: '🧫',
-  biochemistry: '⚗️', serology: '🔬', coagulation: '🩸', allergy: '🤧', other: '🧪'
+  haematology:    '🩸',  // blood drop
+  diabetes:       '🍬',  // sugar/glucose
+  lipids:         '🫀',  // anatomical heart = cardiovascular risk
+  liver:          '💛',  // yellow = bilirubin/jaundice (liver marker)
+  kidney:         '🫧',  // bubbles = filtration (not a bean)
+  thyroid:        '🦋',  // thyroid gland is butterfly-shaped
+  infectious:     '🦠',  // microbe
+  hormones:       '🧬',  // DNA/endocrine
+  vitamins:       '☀️',  // vitamin D / sunshine
+  tumour_markers: '🎯',  // target = tumour marker
+  urinalysis:     '💧',  // droplet = urine
+  microbiology:   '🧫',  // petri dish
+  biochemistry:   '⚗️',  // alembic/beaker
+  serology:       '🔬',  // microscope = antibody detection
+  coagulation:    '🩹',  // bandage = clotting/wound healing
+  allergy:        '🤧',  // sneezing
+  other:          '🧪',  // test tube fallback
 }
 
 const WHY_US = [
