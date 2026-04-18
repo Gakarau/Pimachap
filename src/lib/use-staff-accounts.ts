@@ -42,36 +42,41 @@ export function useStaffAccounts() {
     setLoading(true)
     setError(null)
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    const accessToken = sessionData.session?.access_token
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
 
-    if (!accessToken) {
+      if (!accessToken) {
+        setStaff([])
+        setError('You must be signed in to manage staff accounts.')
+        return
+      }
+
+      const response = await fetch('/api/platform/staff', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string
+        staff?: StaffAccount[]
+      }
+
+      if (!response.ok) {
+        setStaff([])
+        setError(payload.error ?? 'Unable to load staff accounts.')
+        return
+      }
+
+      setStaff(payload.staff ?? [])
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Unable to load staff accounts.'
       setStaff([])
+      setError(message)
+    } finally {
       setLoading(false)
-      setError('You must be signed in to manage staff accounts.')
-      return
     }
-
-    const response = await fetch('/api/platform/staff', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-
-    const payload = (await response.json()) as {
-      error?: string
-      staff?: StaffAccount[]
-    }
-
-    if (!response.ok) {
-      setStaff([])
-      setError(payload.error ?? 'Unable to load staff accounts.')
-      setLoading(false)
-      return
-    }
-
-    setStaff(payload.staff ?? [])
-    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -83,37 +88,48 @@ export function useStaffAccounts() {
       setSaving(true)
       setError(null)
 
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
+      try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const accessToken = sessionData.session?.access_token
 
-      const response = await fetch('/api/platform/staff', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(input),
-      })
+        if (!accessToken) {
+          setError('You must be signed in to manage staff accounts.')
+          return false
+        }
 
-      const payload = (await response.json()) as {
-        error?: string
-        staff?: StaffAccount
-      }
+        const response = await fetch('/api/platform/staff', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(input),
+        })
 
-      if (!response.ok || !payload.staff) {
-        setSaving(false)
-        setError(payload.error ?? 'Unable to save staff account.')
+        const payload = (await response.json().catch(() => ({}))) as {
+          error?: string
+          staff?: StaffAccount
+        }
+
+        if (!response.ok || !payload.staff) {
+          setError(payload.error ?? 'Unable to save staff account.')
+          return false
+        }
+
+        const savedStaff = payload.staff
+        setStaff((current) => {
+          const next = current.filter((item) => item.user_id !== savedStaff.user_id)
+          next.push(savedStaff)
+          return next.sort((a, b) => a.created_at.localeCompare(b.created_at))
+        })
+        return true
+      } catch (caughtError) {
+        const message = caughtError instanceof Error ? caughtError.message : 'Unable to save staff account.'
+        setError(message)
         return false
+      } finally {
+        setSaving(false)
       }
-
-      const savedStaff = payload.staff
-      setStaff((current) => {
-        const next = current.filter((item) => item.user_id !== savedStaff.user_id)
-        next.push(savedStaff)
-        return next.sort((a, b) => a.created_at.localeCompare(b.created_at))
-      })
-      setSaving(false)
-      return true
     },
     []
   )
@@ -123,37 +139,48 @@ export function useStaffAccounts() {
       setSaving(true)
       setError(null)
 
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
+      try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const accessToken = sessionData.session?.access_token
 
-      const response = await fetch(`/api/platform/staff/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(input),
-      })
+        if (!accessToken) {
+          setError('You must be signed in to manage staff accounts.')
+          return false
+        }
 
-      const payload = (await response.json()) as {
-        error?: string
-        staff?: StaffAccount
-      }
+        const response = await fetch(`/api/platform/staff/${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(input),
+        })
 
-      if (!response.ok || !payload.staff) {
-        setSaving(false)
-        setError(payload.error ?? 'Unable to update staff account.')
+        const payload = (await response.json().catch(() => ({}))) as {
+          error?: string
+          staff?: StaffAccount
+        }
+
+        if (!response.ok || !payload.staff) {
+          setError(payload.error ?? 'Unable to update staff account.')
+          return false
+        }
+
+        const updatedStaff = payload.staff
+        setStaff((current) =>
+          current
+            .map((item) => (item.user_id === userId ? updatedStaff : item))
+            .sort((a, b) => a.created_at.localeCompare(b.created_at))
+        )
+        return true
+      } catch (caughtError) {
+        const message = caughtError instanceof Error ? caughtError.message : 'Unable to update staff account.'
+        setError(message)
         return false
+      } finally {
+        setSaving(false)
       }
-
-      const updatedStaff = payload.staff
-      setStaff((current) =>
-        current
-          .map((item) => (item.user_id === userId ? updatedStaff : item))
-          .sort((a, b) => a.created_at.localeCompare(b.created_at))
-      )
-      setSaving(false)
-      return true
     },
     []
   )
