@@ -1,10 +1,13 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import ProtectedWorkspace from '@/components/ProtectedWorkspace'
 import RoleWorkspace from '@/components/RoleWorkspace'
+import type { PlatformRole } from '@/lib/rbac'
 import { usePlatformData } from '@/lib/use-platform-data'
+import { useStaffAccounts } from '@/lib/use-staff-accounts'
 
 function formatKES(value: number) {
   return `KES ${value.toLocaleString()}`
@@ -58,6 +61,37 @@ function Section({
 
 export default function AdminDashboard() {
   const { data, loading, error, summary } = usePlatformData()
+  const { staff, loading: loadingStaff, saving: savingStaff, error: staffError, createStaff, updateStaff } = useStaffAccounts()
+  const [phone, setPhone] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [primaryRole, setPrimaryRole] = useState<PlatformRole>('ops')
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+
+  const staffByRole = useMemo(() => {
+    return staff.reduce<Record<string, number>>((acc, member) => {
+      acc[member.primary_role] = (acc[member.primary_role] ?? 0) + 1
+      return acc
+    }, {})
+  }, [staff])
+
+  async function handleCreateStaff() {
+    setStatusMessage(null)
+    const ok = await createStaff({
+      phone,
+      display_name: displayName,
+      primary_role: primaryRole,
+      roles: [primaryRole],
+    })
+
+    if (!ok) {
+      return
+    }
+
+    setPhone('')
+    setDisplayName('')
+    setPrimaryRole('ops')
+    setStatusMessage('Staff account saved. The assigned user can now access their workspace.')
+  }
 
   return (
     <ProtectedWorkspace allowedRoles={['owner']}>
@@ -174,6 +208,165 @@ export default function AdminDashboard() {
                       </div>
                     ))}
                   </div>
+                </Section>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                <Section
+                  title="Department Access"
+                  subtitle="Assign internal staff to operations, compliance, finance, or owner workspaces after they sign in once."
+                >
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label className="block">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--text-soft)' }}>
+                        Phone
+                      </span>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(event) => setPhone(event.target.value)}
+                        placeholder="+254700000002"
+                        className="mt-2 w-full rounded-[18px] border bg-white px-4 py-3 text-[14px] outline-none"
+                        style={{ borderColor: 'var(--border)' }}
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--text-soft)' }}>
+                        Display Name
+                      </span>
+                      <input
+                        type="text"
+                        value={displayName}
+                        onChange={(event) => setDisplayName(event.target.value)}
+                        placeholder="Jane Operations"
+                        className="mt-2 w-full rounded-[18px] border bg-white px-4 py-3 text-[14px] outline-none"
+                        style={{ borderColor: 'var(--border)' }}
+                      />
+                    </label>
+
+                    <label className="block md:col-span-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--text-soft)' }}>
+                        Primary Role
+                      </span>
+                      <select
+                        value={primaryRole}
+                        onChange={(event) => setPrimaryRole(event.target.value as PlatformRole)}
+                        className="mt-2 w-full rounded-[18px] border bg-white px-4 py-3 text-[14px] outline-none"
+                        style={{ borderColor: 'var(--border)' }}
+                      >
+                        <option value="ops">Operations</option>
+                        <option value="compliance">Compliance</option>
+                        <option value="finance">Finance</option>
+                        <option value="owner">Owner</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="mt-4 rounded-[20px] p-4 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
+                    The user must complete phone login once before you can assign a department role. This writes to
+                    <code className="mx-1 rounded bg-white px-1.5 py-0.5">staff_accounts</code>
+                    and removes the need to rely on Vercel phone mappings long term.
+                  </div>
+
+                  {staffError ? (
+                    <div className="mt-4 rounded-[18px] border px-4 py-3 text-[13px]" style={{ borderColor: 'var(--amber)', background: 'var(--amber-light)', color: '#7A5A00' }}>
+                      {staffError}
+                    </div>
+                  ) : null}
+
+                  {statusMessage ? (
+                    <div className="mt-4 rounded-[18px] border px-4 py-3 text-[13px]" style={{ borderColor: 'rgba(10,143,148,.24)', background: 'var(--teal-pale)', color: 'var(--teal-dark)' }}>
+                      {statusMessage}
+                    </div>
+                  ) : null}
+
+                  <button className="btn btn-teal mt-4" onClick={handleCreateStaff} disabled={savingStaff}>
+                    {savingStaff ? 'Saving staff...' : 'Save Staff Access'}
+                  </button>
+                </Section>
+
+                <Section title="Assigned Staff" subtitle="Current department accounts resolved from the real staff table.">
+                  {loadingStaff ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <div key={index} className="h-[84px] animate-pulse rounded-[20px]" style={{ background: 'var(--bg)' }} />
+                      ))}
+                    </div>
+                  ) : staff.length === 0 ? (
+                    <div className="rounded-[22px] p-4 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-mid)' }}>
+                      No staff accounts have been assigned yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {(['owner', 'ops', 'compliance', 'finance'] as PlatformRole[]).map((role) => (
+                          <div key={role} className="rounded-[20px] p-4" style={{ background: 'var(--bg)' }}>
+                            <div className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--text-soft)' }}>
+                              {role}
+                            </div>
+                            <div className="mt-2 text-[26px] font-extrabold" style={{ color: 'var(--text)' }}>
+                              {staffByRole[role] ?? 0}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-3">
+                        {staff.map((member) => (
+                          <div key={member.user_id} className="rounded-[22px] border p-4" style={{ borderColor: 'var(--border)' }}>
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <div className="text-[16px] font-extrabold" style={{ color: 'var(--text)' }}>
+                                  {member.display_name || member.phone || 'Unnamed staff'}
+                                </div>
+                                <div className="mt-1 text-[13px]" style={{ color: 'var(--text-mid)' }}>
+                                  {member.phone ?? 'No phone stored'} · Roles: {member.roles.join(', ')}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                {(['owner', 'ops', 'compliance', 'finance'] as PlatformRole[]).map((role) => (
+                                  <button
+                                    key={role}
+                                    className="rounded-full px-3 py-2 text-[12px] font-bold"
+                                    style={{
+                                      background: member.primary_role === role ? 'var(--teal)' : 'var(--bg)',
+                                      color: member.primary_role === role ? '#fff' : 'var(--text-mid)',
+                                    }}
+                                    onClick={() => {
+                                      setStatusMessage(null)
+                                      void updateStaff(member.user_id, {
+                                        primary_role: role,
+                                        roles: [role],
+                                      })
+                                    }}
+                                    disabled={savingStaff}
+                                  >
+                                    Make {role}
+                                  </button>
+                                ))}
+                                <button
+                                  className="rounded-full px-3 py-2 text-[12px] font-bold"
+                                  style={{
+                                    background: member.is_active ? 'var(--amber-light)' : 'var(--teal-pale)',
+                                    color: member.is_active ? '#8A5F00' : 'var(--teal-dark)',
+                                  }}
+                                  onClick={() => {
+                                    setStatusMessage(null)
+                                    void updateStaff(member.user_id, { is_active: !member.is_active })
+                                  }}
+                                  disabled={savingStaff}
+                                >
+                                  {member.is_active ? 'Deactivate' : 'Reactivate'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </Section>
               </div>
             </>

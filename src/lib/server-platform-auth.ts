@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type User } from '@supabase/supabase-js'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -21,7 +21,7 @@ type PartnerMembershipRow = {
   is_active: boolean
 }
 
-function normalizePhone(value: string | null | undefined) {
+export function normalizePhone(value: string | null | undefined) {
   if (!value) {
     return null
   }
@@ -221,6 +221,44 @@ export async function resolveServerRoleProfile(request: NextRequest): Promise<Ro
 
 export function createPlatformServiceClient() {
   return createServiceRoleClient()
+}
+
+export async function findAuthUserByPhone(
+  phone: string,
+  serviceClient = createServiceRoleClient()
+): Promise<User | null> {
+  const normalizedPhone = normalizePhone(phone)
+  if (!normalizedPhone) {
+    return null
+  }
+
+  let page = 1
+  const perPage = 200
+
+  while (true) {
+    const {
+      data: { users },
+      error,
+    } = await serviceClient.auth.admin.listUsers({
+      page,
+      perPage,
+    })
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    const match = users.find((user) => normalizePhone(user.phone) === normalizedPhone)
+    if (match) {
+      return match
+    }
+
+    if (users.length < perPage) {
+      return null
+    }
+
+    page += 1
+  }
 }
 
 export function hasRequiredRole(profile: RoleProfile | null, allowedRoles: PlatformRole[]) {
