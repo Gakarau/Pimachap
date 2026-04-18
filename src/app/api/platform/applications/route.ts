@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     return auth.response
   }
 
-  const body = (await request.json()) as {
+  let body: {
     legal_name?: string
     trading_name?: string
     town?: string
@@ -54,6 +54,11 @@ export async function POST(request: NextRequest) {
     contact_phone?: string
     contact_email?: string
     notes?: string
+  }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   if (!body.legal_name || !body.contact_phone) {

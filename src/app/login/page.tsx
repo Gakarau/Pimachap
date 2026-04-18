@@ -46,6 +46,14 @@ export default function LoginPage() {
     if (err) {
       setError(err.message)
     } else {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session?.access_token) {
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: sessionData.session.access_token }),
+        })
+      }
       const { data: userData } = await supabase.auth.getUser()
       const profile = userData.user ? buildRoleProfile(userData.user) : null
       router.push(getHomeRoute(profile))
@@ -94,14 +102,6 @@ export default function LoginPage() {
               {loading ? 'Sending...' : 'Send Verification Code'}
             </button>
 
-            <div className="flex gap-2.5 rounded-[var(--rsm)] p-3" style={{ background: 'var(--amber-light)', border: '1px solid #F5D78A' }}>
-              <span className="text-base">Test</span>
-              <div>
-                <p className="text-[12px] leading-relaxed" style={{ color: '#7A5A00' }}>
-                  Use phone <strong>+254700000001</strong> and OTP <strong>123456</strong> if that test number is configured in Supabase.
-                </p>
-              </div>
-            </div>
           </>
         ) : (
           <>

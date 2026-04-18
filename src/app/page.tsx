@@ -37,18 +37,26 @@ const WHY_US = [
 ]
 
 export default async function HomePage() {
-  const { data: tests } = await supabase
-    .from('tests')
-    .select('id, name, slug, sample_type, category')
-    .eq('is_active', true)
-    .limit(8)
+  let tests: Array<{ id: string; name: string; slug: string; sample_type: string; category: string }> = []
+  let uniqueCats: string[] = []
 
-  const { data: categories } = await supabase
-    .from('tests')
-    .select('category')
-    .eq('is_active', true)
+  try {
+    const { data: testsData } = await supabase
+      .from('tests')
+      .select('id, name, slug, sample_type, category')
+      .eq('is_active', true)
+      .limit(8)
 
-  const uniqueCats = [...new Set(categories?.map(c => c.category) || [])]
+    const { data: categoriesData } = await supabase
+      .from('tests')
+      .select('category')
+      .eq('is_active', true)
+
+    tests = testsData ?? []
+    uniqueCats = [...new Set(categoriesData?.map((c) => c.category) || [])]
+  } catch {
+    // Supabase unavailable — render with empty data
+  }
 
   return (
     <div className="animate-fade-up">
@@ -172,7 +180,7 @@ export default async function HomePage() {
           <Link href="/search" className="text-[12px] font-bold no-underline" style={{ color: 'var(--teal)' }}>See all →</Link>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 mb-6" style={{ scrollbarWidth: 'none' }}>
-          {tests?.map(t => (
+          {tests.map(t => (
             <Link key={t.id} href={`/search?q=${encodeURIComponent(t.name)}`}
                   className="shrink-0 px-3.5 py-2 rounded-full border-[1.5px] border-[var(--border)] bg-white text-[12px] font-bold text-[var(--text-mid)] no-underline whitespace-nowrap hover:border-[var(--teal)] transition-colors"
                   style={{ boxShadow: 'var(--sh)' }}>

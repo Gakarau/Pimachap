@@ -12,9 +12,14 @@ export async function PATCH(
   }
 
   const { id } = await context.params
-  const body = (await request.json()) as {
+  let body: {
     status?: 'uploaded' | 'under_review' | 'approved' | 'rejected'
     rejection_reason?: string
+  }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   if (!body.status) {

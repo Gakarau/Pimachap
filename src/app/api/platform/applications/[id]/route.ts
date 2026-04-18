@@ -60,10 +60,15 @@ export async function PATCH(
   }
 
   const { id } = await context.params
-  const body = (await request.json()) as {
+  let body: {
     status?: 'submitted' | 'under_review' | 'approved' | 'rejected'
     notes?: string
     decision?: 'approved' | 'rejected' | 'needs_changes'
+  }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
   const updatePayload: Record<string, unknown> = {

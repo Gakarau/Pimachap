@@ -20,48 +20,6 @@ function parseLabIds(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0)
 }
 
-function parsePhoneEnv(name: string) {
-  const value = process.env[name]
-  if (!value) {
-    return []
-  }
-
-  return value
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-}
-
-function parseLabScopeEnv(name: string) {
-  const value = process.env[name]
-  if (!value) {
-    return []
-  }
-
-  return value
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-}
-
-function getBootstrapRoles(phone: string | null): PlatformRole[] {
-  if (!phone) {
-    return []
-  }
-
-  const mappings: Array<[PlatformRole, string[]]> = [
-    ['owner', parsePhoneEnv('NEXT_PUBLIC_OWNER_PHONES')],
-    ['ops', parsePhoneEnv('NEXT_PUBLIC_OPS_PHONES')],
-    ['compliance', parsePhoneEnv('NEXT_PUBLIC_COMPLIANCE_PHONES')],
-    ['finance', parsePhoneEnv('NEXT_PUBLIC_FINANCE_PHONES')],
-    ['partner_lab', parsePhoneEnv('NEXT_PUBLIC_PARTNER_LAB_PHONES')],
-  ]
-
-  return mappings
-    .filter(([, phones]) => phones.includes(phone))
-    .map(([role]) => role)
-}
-
 function dedupeRoles(roles: PlatformRole[]) {
   const seen = new Set<PlatformRole>()
 
@@ -91,12 +49,11 @@ export function buildRoleProfile(user: User): RoleProfile {
   ]
 
   const phone = user.phone ?? null
-  const roles = dedupeRoles([...metadataRoles, ...getBootstrapRoles(phone)])
+  const roles = dedupeRoles(metadataRoles)
   const scopedLabIds = Array.from(
     new Set([
       ...parseLabIds(appMeta.lab_ids),
       ...parseLabIds(userMeta.lab_ids),
-      ...parseLabScopeEnv('NEXT_PUBLIC_PARTNER_LAB_IDS'),
     ])
   )
   const primaryRole = getPrimaryRole(roles)

@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createPlatformServiceClient, getPartnerDocumentBucket, requireServerRoleProfile } from '@/lib/server-platform-auth'
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+])
+
+const ALLOWED_DOCUMENT_TYPES = new Set([
+  'business_registration',
+  'tax_compliance',
+  'facility_license',
+  'accreditation_certificate',
+  'director_id',
+  'bank_statement',
+  'other',
+])
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -18,6 +38,28 @@ export async function POST(
 
   if (!(file instanceof File) || typeof documentType !== 'string' || documentType.length === 0) {
     return NextResponse.json({ error: 'file and document_type are required' }, { status: 400 })
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json({ error: 'File exceeds 10 MB limit' }, { status: 400 })
+  }
+
+  if (file.size === 0) {
+    return NextResponse.json({ error: 'File is empty' }, { status: 400 })
+  }
+
+  if (!ALLOWED_MIME_TYPES.has(file.type)) {
+    return NextResponse.json(
+      { error: 'Unsupported file type. Allowed: PDF, JPEG, PNG, DOC, DOCX' },
+      { status: 400 }
+    )
+  }
+
+  if (!ALLOWED_DOCUMENT_TYPES.has(documentType)) {
+    return NextResponse.json(
+      { error: `Invalid document_type. Allowed: ${[...ALLOWED_DOCUMENT_TYPES].join(', ')}` },
+      { status: 400 }
+    )
   }
 
   const bucket = getPartnerDocumentBucket()
