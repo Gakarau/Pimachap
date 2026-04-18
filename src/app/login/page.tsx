@@ -56,7 +56,9 @@ export default function LoginPage() {
       }
       const { data: userData } = await supabase.auth.getUser()
       const profile = userData.user ? buildRoleProfile(userData.user) : null
-      router.push(getHomeRoute(profile))
+      const requested = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('next') : null
+      const nextRoute = requested && requested.startsWith('/') ? requested : null
+      router.push(nextRoute ?? getHomeRoute(profile))
     }
   }
 

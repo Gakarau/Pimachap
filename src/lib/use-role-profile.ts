@@ -24,17 +24,29 @@ export function useRoleProfile() {
     let mounted = true
 
     async function resolveProfile(session: Session | null) {
-      if (session?.access_token) {
-        const response = await fetch('/api/platform/me', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
+      try {
+        if (session?.access_token) {
+          const controller = new AbortController()
+          const timeout = window.setTimeout(() => controller.abort(), 8000)
 
-        if (response.ok) {
-          const payload = (await response.json()) as { profile: RoleProfile | null }
-          return payload.profile
+          try {
+            const response = await fetch('/api/platform/me', {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              signal: controller.signal,
+            })
+
+            if (response.ok) {
+              const payload = (await response.json()) as { profile: RoleProfile | null }
+              return payload.profile
+            }
+          } finally {
+            window.clearTimeout(timeout)
+          }
         }
+      } catch {
+        // Fall back to client-side role bootstrap if the server profile lookup fails.
       }
 
       const { data: userData } = await supabase.auth.getUser()
@@ -42,18 +54,30 @@ export function useRoleProfile() {
     }
 
     async function load() {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const profile = await resolveProfile(sessionData.session)
+      try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const profile = await resolveProfile(sessionData.session)
 
-      if (!mounted) {
-        return
+        if (!mounted) {
+          return
+        }
+
+        setState({
+          loading: false,
+          session: sessionData.session,
+          profile,
+        })
+      } catch {
+        if (!mounted) {
+          return
+        }
+
+        setState({
+          loading: false,
+          session: null,
+          profile: null,
+        })
       }
-
-      setState({
-        loading: false,
-        session: sessionData.session,
-        profile,
-      })
     }
 
     load()
