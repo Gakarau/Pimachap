@@ -1,13 +1,15 @@
 'use client'
+import { useState } from 'react'
 import { useCart } from '@/lib/cart-context'
 import { useBooking } from '@/lib/booking-context'
-import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function PaymentPage() {
   const { cart } = useCart()
-  const { selectedLab, schedule, delivery, setOrderNumber } = useBooking()
-  const router = useRouter()
+  const { selectedLab, schedule, delivery } = useBooking()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   if (!selectedLab || !schedule) {
     return (
@@ -33,12 +35,43 @@ export default function PaymentPage() {
     return date.toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' })
   }
 
-  const handlePay = () => {
-    // Generate a mock order number
-    const now = new Date()
-    const num = `PCH-${now.getFullYear().toString().slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`
-    setOrderNumber(num)
-    router.push('/confirmation')
+  const handlePay = async () => {
+    setError('')
+    setLoading(true)
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+
+      if (!token) {
+        setError('Please sign in to complete your booking.')
+        setLoading(false)
+        return
+      }
+
+      const res = await fetch('/api/payments/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ cart, selectedLab, schedule, delivery }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error ?? 'Payment could not be started. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      // Redirect to Paystack hosted checkout
+      window.location.href = data.authorization_url
+    } catch {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -111,31 +144,41 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        {/* M-Pesa */}
-        <div className="rounded-[var(--r)] overflow-hidden border-[1.5px] border-[#4CAF50] mb-4">
-          <div className="bg-[#4CAF50] text-white text-[10px] font-bold tracking-wider px-3.5 py-1.5 uppercase">M-PESA</div>
+        {/* Payment methods */}
+        <div className="rounded-[var(--r)] overflow-hidden border-[1.5px] border-[var(--teal)] mb-4">
+          <div className="text-white text-[10px] font-bold tracking-wider px-3.5 py-1.5 uppercase"
+               style={{ background: 'var(--teal)' }}>Secure Payment</div>
           <div className="bg-white p-4">
-            <div className="text-[15px] font-extrabold mb-1">Pay KES {grandTotal.toLocaleString()} via M-Pesa</div>
-            <div className="text-[12px] text-[var(--text-soft)] mb-3">STK push sent to your phone</div>
-            <div className="flex items-center gap-2 bg-[var(--bg)] rounded-[var(--rsm)] p-3">
-              <span className="text-sm font-bold text-[var(--text-mid)]">🇰🇪 +254</span>
-              <span className="text-base font-extrabold">712 345 678</span>
+            <div className="text-[15px] font-extrabold mb-1">Pay KES {grandTotal.toLocaleString()}</div>
+            <div className="text-[12px] text-[var(--text-soft)] mb-3">
+              M-Pesa · Card · Bank transfer — choose on the next screen
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {['M-Pesa', 'Visa', 'Mastercard', 'Bank'].map(method => (
+                <span key={method} className="tag tag-green text-[11px]">{method}</span>
+              ))}
             </div>
           </div>
         </div>
+
+        {error ? (
+          <div className="rounded-[var(--rsm)] p-3 mb-3" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+            <p className="text-[12px] font-semibold text-red-700">{error}</p>
+          </div>
+        ) : null}
 
         <div className="rounded-[var(--rsm)] p-3 flex gap-2.5"
              style={{ background: 'var(--amber-light)', border: '1px solid #F5D78A' }}>
           <span className="text-base">🔒</span>
           <p className="text-[12px] leading-relaxed" style={{ color: '#7A5A00' }}>
-            By booking you agree to our Terms of Service. Your payment is processed securely via M-Pesa.
+            By booking you agree to our Terms of Service. Payment is processed securely via Paystack.
           </p>
         </div>
       </div>
 
       <div className="fixed bottom-[72px] md:bottom-0 left-0 right-0 w-full max-w-6xl mx-auto px-5 pb-4 pt-3 bg-white border-t-[1.5px] border-[var(--border)] z-50">
-        <button className="btn btn-teal text-base" onClick={handlePay}>
-          💳 Pay KES {grandTotal.toLocaleString()} via M-Pesa
+        <button className="btn btn-teal text-base" onClick={handlePay} disabled={loading}>
+          {loading ? 'Redirecting to payment...' : `💳 Pay KES ${grandTotal.toLocaleString()}`}
         </button>
       </div>
     </div>
