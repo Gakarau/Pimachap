@@ -21,6 +21,74 @@ type PartnerMembershipRow = {
   is_active: boolean
 }
 
+function normalizePhone(value: string | null | undefined) {
+  if (!value) {
+    return null
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  if (trimmed.startsWith('+')) {
+    return trimmed
+  }
+
+  const digits = trimmed.replace(/\D/g, '')
+  if (!digits) {
+    return null
+  }
+
+  if (digits.startsWith('254')) {
+    return `+${digits}`
+  }
+
+  if (digits.startsWith('0')) {
+    return `+254${digits.slice(1)}`
+  }
+
+  return `+${digits}`
+}
+
+function parsePhoneList(value: string | undefined) {
+  return new Set(
+    (value ?? '')
+      .split(',')
+      .map((item) => normalizePhone(item))
+      .filter((item): item is string => Boolean(item))
+  )
+}
+
+function getBootstrapRoles(phone: string | null): PlatformRole[] {
+  if (!phone) {
+    return []
+  }
+
+  const mappings: Array<[PlatformRole, string | undefined]> = [
+    ['owner', process.env.NEXT_PUBLIC_OWNER_PHONES],
+    ['ops', process.env.NEXT_PUBLIC_OPS_PHONES],
+    ['compliance', process.env.NEXT_PUBLIC_COMPLIANCE_PHONES],
+    ['finance', process.env.NEXT_PUBLIC_FINANCE_PHONES],
+    ['partner_lab', process.env.NEXT_PUBLIC_PARTNER_LAB_PHONES],
+  ]
+
+  return mappings
+    .filter(([, value]) => parsePhoneList(value).has(phone))
+    .map(([role]) => role)
+}
+
+function getBootstrapLabIds(phone: string | null) {
+  if (!phone || !parsePhoneList(process.env.NEXT_PUBLIC_PARTNER_LAB_PHONES).has(phone)) {
+    return []
+  }
+
+  return (process.env.NEXT_PUBLIC_PARTNER_LAB_IDS ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+}
+
 function getEnv(name: 'NEXT_PUBLIC_SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY') {
   const value = process.env[name]
   if (!value) {
@@ -130,21 +198,23 @@ export async function resolveServerRoleProfile(request: NextRequest): Promise<Ro
 
   const staff = (staffRows?.[0] ?? null) as StaffAccountRow | null
   const memberships = (partnerRows ?? []) as PartnerMembershipRow[]
+  const phone = normalizePhone(user.phone)
 
   const roles = dedupeRoles([
     ...(staff?.roles ?? []),
     ...(staff?.primary_role ? [staff.primary_role] : []),
     ...memberships.map((membership) => membership.role),
+    ...getBootstrapRoles(phone),
   ])
 
   const primaryRole = staff?.primary_role ?? roles[0] ?? null
 
   return {
     userId: user.id,
-    phone: staff?.phone ?? user.phone ?? null,
+    phone: staff?.phone ?? phone,
     roles,
     primaryRole,
-    scopedLabIds: memberships.map((membership) => membership.lab_id),
+    scopedLabIds: Array.from(new Set([...memberships.map((membership) => membership.lab_id), ...getBootstrapLabIds(phone)])),
     displayName: staff?.display_name ?? 'Platform User',
   }
 }
