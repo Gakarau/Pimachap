@@ -69,7 +69,7 @@ export default function LoginPage() {
         style={{ background: 'linear-gradient(160deg, var(--teal-dark) 0%, var(--teal) 55%, var(--teal-light) 100%)', borderRadius: '0 0 32px 32px' }}
       >
         <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 text-4xl">
-          Lock
+          🔒
         </div>
         <div className="logo-text mb-2 text-4xl text-white" style={{ color: '#fff' }}>
           PIMA<span style={{ color: 'var(--amber)' }}>CHAP</span>
@@ -146,7 +146,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-6 flex gap-2.5 rounded-[var(--rsm)] p-3" style={{ background: 'var(--teal-pale)', border: '1px solid rgba(10,143,148,.2)' }}>
-          <span className="text-base">Route</span>
+          <span className="text-base">ℹ️</span>
           <div>
             <p className="text-[12px] leading-relaxed" style={{ color: 'var(--teal-dark)' }}>
               Staff and partner users are routed to their workspace based on Supabase metadata roles such as <strong>owner</strong>, <strong>ops</strong>, <strong>compliance</strong>, <strong>finance</strong>, or <strong>partner_lab</strong>.
